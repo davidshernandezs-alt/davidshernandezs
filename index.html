@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente Virtual Inteligente - David</title>
+    <style>
+        :root {
+            --azul-marino: #0a2540;
+            --gris: #f4f6f8;
+            --blanco: #ffffff;
+            --naranja: #ff6600;
+            --borde: #e2e8f0;
+            --verde-whatsapp: #25d366;
+            --oro: #f59e0b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--gris);
+            color: var(--azul-marino);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 950px; 
+            background: var(--blanco);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(10, 37, 64, 0.05);
+            box-sizing: border-box;
+        }
+
+        .screen { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .screen.active { display: block; }
+
+        h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 25px; text-align: center; letter-spacing: -0.5px; }
+        h3 { font-size: 1.1rem; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--borde); padding-bottom: 8px; }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            margin-bottom: 20px;
+        }
+        @media (min-width: 768px) {
+            .main-layout { grid-template-columns: 1fr 1.2fr 1fr; align-items: start; }
+        }
+
+        /* Perfil David */
+        .profile-card {
+            background: #f8fafc; border: 1px solid var(--borde); border-radius: 16px;
+            padding: 20px; text-align: center; display: flex; flex-direction: column; align-items: center;
+        }
+        .profile-img-container {
+            width: 90px; height: 90px; border-radius: 50%; background: #e2e8f0;
+            margin-bottom: 12px; overflow: hidden; border: 3px solid var(--azul-marino);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .profile-img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+        .profile-desc { font-size: 0.8rem; color: #475569; line-height: 1.4; text-align: justify; margin-bottom: 15px; }
+
+        /* Contenedor de Avatar Estático para Plumín */
+        .avatar-container { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .avatar {
+            width: 125px; height: 125px; border-radius: 50%;
+            background: #ffffff;
+            border: 4px solid var(--naranja); display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 8px 20px rgba(255, 102, 0, 0.2); position: relative; cursor: pointer; transition: 0.3s;
+            overflow: hidden; padding: 2px;
+        }
+        
+        .plumin-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .chat-box {
+            width: 100%; background: #f8fafc; border: 1px solid var(--borde);
+            border-radius: 12px; padding: 15px; margin-top: 15px;
+            min-height: 80px; font-size: 0.85rem; color: #334155; box-sizing: border-box; line-height: 1.4; text-align: center;
+        }
+        .client-reply-box { width: 100%; margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+
+        /* Top Projects */
+        .top-projects { background: #f8fafc; border: 1px solid var(--borde); border-radius: 16px; padding: 15px; }
+        .top-title { font-size: 0.75rem; font-weight: 700; color: var(--azul-marino); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; border-bottom: 1px solid var(--borde); padding-bottom: 5px; }
+        .project-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed var(--borde); }
+        .stars { color: var(--oro); font-size: 0.75rem; font-weight: bold; }
+
+        /* Carrete de Portafolio */
+        .portfolio-carousel-title {
+            font-size: 0.85rem; font-weight: 700; color: var(--azul-marino);
+            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 25px; margin-bottom: 10px;
+        }
+        .portfolio-carousel {
+            display: flex; gap: 15px; overflow-x: auto; padding-bottom: 12px;
+            scrollbar-width: thin; scrollbar-color: var(--naranja) var(--gris);
+            -webkit-overflow-scrolling: touch; margin-bottom: 15px;
+        }
+        .portfolio-carousel::-webkit-scrollbar { height: 6px; }
+        .portfolio-carousel::-webkit-scrollbar-thumb { background-color: var(--naranja); border-radius: 10px; }
+        .portfolio-carousel::-webkit-scrollbar-track { background: var(--gris); }
+        
+        .portfolio-card-item {
+            min-width: 220px; max-width: 220px; height: 120px; border-radius: 14px;
+            background: linear-gradient(135deg, #1e293b, var(--azul-marino));
+            border: 1px solid var(--borde); padding: 15px; box-sizing: border-box;
+            display: flex; flex-direction: column; justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; text-decoration: none;
+        }
+        .portfolio-card-item:hover {
+            transform: translateY(-3px); box-shadow: 0 6px 15px rgba(10, 37, 64, 0.15);
+            border-color: var(--naranja);
+        }
+        .portfolio-card-tag { font-size: 0.65rem; font-weight: 700; color: var(--naranja); text-transform: uppercase; }
+        .portfolio-card-name { font-size: 0.85rem; font-weight: 600; color: var(--blanco); margin: 5px 0 auto 0; }
+        .portfolio-card-link-text { font-size: 0.72rem; color: #94a3b8; display: flex; align-items: center; gap: 4px; }
+
+        /* Pestañas */
+        .tabs-nav { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid var(--gris); }
+        .tab-btn { background: none; color: #64748b; font-weight: 600; padding: 10px 15px; border: none; border-radius: 0; border-bottom: 3px solid transparent; cursor: pointer; font-size: 0.9rem; }
+        .tab-btn.active { color: var(--naranja); border-bottom-color: var(--naranja); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; animation: fadeIn 0.2s ease-in-out; }
+
+        /* PERSONAJES DE CARGA */
+        .fitness-progress-container { background: #f8fafc; border: 1px solid var(--borde); padding: 15px; border-radius: 12px; margin: 15px 0; display: none; }
+        .fitness-athlete-box { font-size: 2.2rem; text-align: center; margin-bottom: 8px; height: 45px; display: flex; justify-content: center; align-items: center; }
+
+        .anim-run { animation: runMotion 0.4s infinite steps(2); }
+        .anim-pushup { animation: pushupMotion 0.6s infinite ease-in-out; }
+        .anim-lift { animation: liftMotion 0.8s infinite alternate ease-in-out; }
+        .anim-pullup { animation: pullupMotion 0.5s infinite alternate ease-in-out; }
+        .anim-victory { animation: victoryMotion 0.3s infinite alternate ease-in-out; }
+
+        @keyframes runMotion { 0% { transform: skewX(-7deg); } 100% { transform: skewX(7deg); } }
+        @keyframes pushupMotion { 0%, 100% { transform: translateY(8px) scaleY(0.75); } 50% { transform: translateY(0) scaleY(1); } }
+        @keyframes liftMotion { 0% { transform: translateY(6px); } 100% { transform: translateY(-8px); } }
+        @keyframes pullupMotion { 0% { transform: translateY(8px); } 100% { transform: translateY(-10px); } }
+        @keyframes victoryMotion { 0% { transform: scale(1) rotate(-6deg); } 100% { transform: scale(1.15) rotate(6deg); } }
+
+        .fitness-status-txt { font-size: 0.78rem; text-align: center; font-weight: 700; color: var(--azul-marino); margin-bottom: 6px; }
+        .fitness-bar-bg { background: #e2e8f0; height: 12px; border-radius: 6px; overflow: hidden; position: relative; }
+        .fitness-bar-fill { background: linear-gradient(90deg, var(--azul-marino), var(--naranja)); width: 0%; height: 100%; transition: width 0.1s linear; }
+
+        /* Modales */
+        .announcement-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 37, 64, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; display: none; }
+        .announcement-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 500px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); text-align: center; position: relative; }
+        .close-modal { position: absolute; top: 12px; right: 15px; font-size: 1.3rem; cursor: pointer; color: #64748b; font-weight: bold; }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; margin-top: 15px; background: #000; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .login-box { background: #f8fafc; border: 1px solid var(--borde); border-radius: 12px; padding: 15px; margin-top: 15px; width: 100%; box-sizing: border-box; }
+
+        /* Tablas */
+        .admin-table-container { width: 100%; overflow-x: auto; margin-top: 15px; border-radius: 8px; border: 1px solid var(--borde); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid var(--borde); }
+        th { background-color: #f1f5f9; font-weight: 700; color: #475569; }
+        .badge { font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block; }
+
+        .interactive-panel { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; width: 100%; box-sizing: border-box; }
+        .btn-option { background: #fff; border: 1px solid var(--borde); color: var(--azul-marino); padding: 12px; text-align: left; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .btn-option:hover { background: #f8fafc; border-color: var(--azul-marino); }
+
+        .form-group { margin-bottom: 15px; width: 100%; text-align: left; }
+        label { display: block; font-size: 0.72rem; font-weight: 700; margin-bottom: 6px; color: #64748b; letter-spacing: 0.5px; }
+        select, input[type="text"], input[type="password"], textarea { width: 100%; padding: 10px; border: 1px solid var(--borde); border-radius: 8px; box-sizing: border-box; font-size: 0.9rem; color: var(--azul-marino); }
+        .drop-zone { border: 2px dashed var(--naranja); padding: 25px; border-radius: 12px; text-align: center; cursor: pointer; margin-bottom: 15px; font-size: 0.85rem; color: #64748b; background-color: #fffaf7; }
+        .nav-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 15px; width: 100%; }
+
+        button { padding: 11px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+        .btn-upload { background: var(--azul-marino); color: white; width: 100%; }
+        .btn-gallery { background: #e2e8f0; color: var(--azul-marino); }
+        .btn-main { background: var(--naranja); color: white; padding: 10px 20px; box-shadow: 0 4px 12px rgba(255, 102, 0, 0.2); }
+        .btn-admin { background: #334155; color: white; width: 100%; }
+        .btn-whatsapp { background: var(--verde-whatsapp); color: white; width: 100%; font-size: 1rem; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+
+        .matrix-grid { display: grid; grid-template-columns: 1fr; gap: 8px; max-height: 220px; overflow-y: auto; padding: 5px; border: 1px solid var(--borde); border-radius: 8px; background: #fafafa; }
+        @media (min-width: 480px) { .matrix-grid { grid-template-columns: 1fr 1fr; } }
+        .matrix-item { display: flex; align-items: center; gap: 8px; padding: 8px; background: white; border: 1px solid var(--borde); border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+        .matrix-item input { cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="announcement-modal" id="popupModal">
+    <div class="announcement-content">
+        <span class="close-modal" id="btnClosePopup">&times;</span>
+        <h2 id="popupTitle" style="font-size:1.2rem; color:var(--azul-marino); margin-top:10px;">Comunicado Especial</h2>
+        <p id="popupText" style="font-size:0.9rem; color:#475569; line-height:1.4; margin-bottom:0;"></p>
+        <div class="video-container" id="popupVideoFrame" style="display: none;">
+            <iframe id="youtubeIframe" src="" allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    
+    <!-- PANTALLA 1: HOME -->
+    <div id="screenMain" class="screen active">
+        <h1>Asistente Inteligente</h1>
+        
+        <div class="main-layout">
+            <div class="profile-card">
+                <div class="profile-img-container" id="profileImgFrame"><span style="font-size:2rem; color:#94a3b8;">👨‍💻</span></div>
+                <div class="profile-name" id="displayProfileName">David Hernández</div>
+                <div class="profile-desc" id="displayProfileDesc">Productor audiovisual y diseñador gráfico. Especialista en la creación de interfaces minimalistas, identidad corporativa y edición cinematográfica de alta calidad.</div>
+                
+                <button class="btn-admin" id="btnToggleLogin">⚙️ Panel Administrador</button>
+                
+                <div class="login-box" id="loginBox" style="display: none;">
+                    <div class="form-group"><input type="text" id="usernameInput" placeholder="Usuario"></div>
+                    <div class="form-group" style="margin-bottom: 10px;"><input type="password" id="passwordInput" placeholder="Contraseña"></div>
+                    <button class="btn-upload" id="btnAdminLoginSubmit">Entrar</button>
+                </div>
+            </div>
+
+            <div class="avatar-container">
+                <div class="avatar" id="avatarIa">
+                    <video id="avatarVideo" class="plumin-video" preload="auto" muted playsinline loop>
+                        <source src="PLUMIN1.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="chat-box" id="aiResponse">Haz clic en mi avatar o escríbeme abajo para iniciar la asistencia personalizada.</div>
+                
+                <div class="client-reply-box">
+                    <textarea id="clientIaTextInput" rows="2" placeholder="Escribe tu respuesta o consulta aquí para la IA (ej. hola, logo, video)..."></textarea>
+                    <button class="btn-upload" style="padding:8px; font-size:0.8rem; background:var(--azul-marino);" id="btnSendClientIaText">Enviar a la IA</button>
+                </div>
+            </div>
+
+            <div class="top-projects-area">
+                <div class="top-projects">
+                    <div class="top-title">🏆 Top 5 Proyectos</div>
+                    <div class="project-item"><span>Manual de Marca</span> <span class="stars">★ 5.0</span></div>
+                    <div class="project-item"><span>Video Promocional</span> <span class="stars">★ 4.9</span></div>
+                    <div class="project-item"><span>Animación de Logo</span> <span class="stars">★ 4.9</span></div>
+                    <div class="project-item"><span>Diseño Infografía</span> <span class="stars">★ 4.8</span></div>
+                    <div class="project-item"><span>Edición de Reels</span> <span class="stars">★ 4.8</span></div>
+                </div>
+
+                <!-- CONTENEDOR DE PASARELA DE PAGOS DINÁMICA -->
+                <div style="background: #f8fafc; border: 1px solid var(--borde); border-radius: 16px; padding: 15px; margin-top: 15px; text-align: center;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--azul-marino); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; border-bottom: 1px solid var(--borde); padding-bottom: 5px;">
+                        💳 Métodos de Pago Rápidos
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <a id="btnPaypalLink" href="#" target="_blank" style="background: #003087; color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 6px;">
+                            🔵 Pagar con PayPal
+                        </a>
+                        <button id="btnBinanceModalTrigger" style="background: #f3ba2f; color: #1e2026; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; border:none; cursor:pointer;">
+                            🟡 Binance Pay (ID / Correo)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="width:100%; display:flex; justify-content:center; margin: 15px 0;">
+            <button class="btn-main" style="width:100%; max-width:320px; font-size:0.95rem;" id="btnGoControl">🔐 Gestión de Archivos (Clientes)</button>
+        </div>
+
+        <div class="interactive-panel" id="panelInicial" style="display: none;">
+            <button class="btn-option" id="btnExistenteFlow">💼 Ya soy cliente / Intercambio de Archivos</button>
+            <button class="btn-option" id="btnNuevoFlow">✨ Soy un cliente nuevo / Cotizar servicios</button>
+        </div>
+
+        <div class="interactive-panel" id="panelExistente" style="display: none;">
+            <button class="btn-option" id="btnCheckStatus1">📊 Estatus de "Diseño de Marca"</button> 
+            <button class="btn-option" id="btnCheckStatus2">🎬 Estatus de "Video Promocional"</button>
+            <button class="btn-gallery" style="background:transparent; border:1px solid var(--borde); width:100%; margin-top:5px;" id="btnCancelExistente">← Volver</button>
+        </div>
+
+        <div class="interactive-panel" id="panelIaPasos" style="display: none;">
+            <div id="iaStepContent" style="width:100%;"></div>
+        </div>
+
+        <div class="portfolio-carousel-title">📁 Visita mi Portafolio Profesional</div>
+        <div class="portfolio-carousel">
+            <a href="https://www.behance.net/DSAMUELHS" target="_blank" class="portfolio-card-item">
+                <div class="portfolio-card-tag">Behance</div>
+                <div class="portfolio-card-name">Identidad Visual & Marcas</div>
+                <div class="portfolio-card-link-text">Ver proyectos completos ↗</div>
+            </a>
+            <a href="https://www.instagram.com/dsamuelhs_diseno/" target="_blank" class="portfolio-card-item">
+                <div class="portfolio-card-tag">Instagram</div>
+                <div class="portfolio-card-name">Edición Cinematográfica</div>
+                <div class="portfolio-card-link-text">Ver Reels y Contenido ↗</div>
+            </a>
+            <a href="https://www.youtube.com/@Dsamuelhs" target="_blank" class="portfolio-card-item">
+                <div class="portfolio-card-tag">YouTube</div>
+                <div class="portfolio-card-name">Producción Audiovisual & Motion</div>
+                <div class="portfolio-card-link-text">Ver Canal de Video ↗</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- PANTALLA 2: INTERCAMBIO PRIVADO -->
+    <div id="screenControl" class="screen">
+        <h1>🔐 Panel de Intercambio Privado</h1>
+        
+        <div class="form-group" id="codeVerificationBlock">
+            <label style="color:var(--naranja); font-weight:700;">INGRESA TU CÓDIGO ÚNICO DE PROYECTO</label>
+            <input type="text" id="clientProjectCodeInput" placeholder="Ej. DV26-4819" style="text-transform: uppercase; font-size:1.1rem; text-align:center; padding:12px; letter-spacing:2px;">
+            <button class="btn-upload" style="margin-top:10px;" id="btnVerifyProjectCode">Ingresar al Canal Protegido</button>
+        </div>
+
+        <div id="privateGallerySection" style="display:none;">
+            <h3 style="color:var(--azul-marino);">💼 Proyecto Activo con David</h3>
+            
+            <div class="tabs-nav">
+                <button class="tab-btn active" id="btnTabDescargar">📥 Mis Entregas</button>
+                <button class="tab-btn" id="btnTabSubir">📤 Enviar Recursos</button>
+            </div>
+
+            <div id="tabDescargar" class="tab-panel active">
+                <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid var(--borde);">
+                    <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--naranja);">Entregas Listas de David</h4>
+                    <div id="galleryContent"></div>
+                </div>
+            </div>
+
+            <div id="tabSubir" class="tab-panel">
+                <div style="background:#fffaf7; padding:15px; border-radius:12px; border:1px dashed var(--naranja);">
+                    <h4 style="margin:0 0 5px 0; font-size:0.9rem; color:var(--azul-marino);">Subir Referencias a David</h4>
+                    <div class="drop-zone" id="clientDropZone">Toca para seleccionar tus referencias</div>
+                    <input type="file" id="clientFileInput" hidden multiple>
+                    
+                    <div class="fitness-progress-container" id="clientProgressBox">
+                        <div class="fitness-athlete-box" id="clientAthlete">🏃‍♂️</div>
+                        <div class="fitness-status-txt" id="clientProgressTxt">Preparando carga... 0%</div>
+                        <div class="fitness-bar-bg">
+                            <div class="fitness-bar-fill" id="clientProgressBarFill"></div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-upload" id="btnClientUploadFiles" style="margin-top:10px; background:var(--azul-marino);">Subir Recursos para David</button>
+                </div>
+            </div>
+            
+            <button class="btn-gallery" id="btnLockChannel" style="background:#e2e8f0; width:100%; margin-top:15px;">🔒 Cerrar Canal Privado</button>
+        </div>
+
+        <div class="nav-actions">
+            <button class="btn-gallery" style="background:transparent; border:1px solid var(--borde); width:100%; max-width:250px;" id="btnBackFromControl">← Volver al Inicio</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA 3: ADMIN CON CONTROLADOR DE MATRIZ Y DE CUENTAS DE PAGO -->
+    <div id="screenAdmin" class="screen">
+        <h1>⚙️ Panel de Control del Administrador</h1>
+        
+        <!-- MODULO DE CONFIGURACIÓN DE PLATAFORMAS FINANCIERAS (NUEVO) -->
+        <div style="background:#f0fbf6; border:2px solid var(--verde-whatsapp); padding:20px; border-radius:16px; margin-bottom:20px;">
+            <h3 style="color:var(--verde-whatsapp); margin-bottom:5px;">💵 Configurar Cuentas de Recaudación Financiera</h3>
+            <p style="font-size: 0.75rem; color:#475569; margin-bottom: 12px;">Modifica tus enlaces de pasarela aquí. La app pública adaptará tus nuevos datos de forma automática en los botones.</p>
+            <div class="form-group">
+                <label>ENLACE COMPLETO DE PAYPAL ME</label>
+                <input type="text" id="adminPaypalInput" placeholder="Ej. https://www.paypal.me/dsamuelhs">
+            </div>
+            <div class="form-group">
+                <label>BINANCE ID DE PAY / CORREO ELECTRÓNICO</label>
+                <input type="text" id="adminBinanceInput" placeholder="Ej. Pay ID: 153791649 o dsamuelhs@gmail.com">
+            </div>
+            <button class="btn-upload" id="btnSaveFinancialAccounts" style="background:var(--verde-whatsapp); width:auto; padding:8px 22px;">Guardar Cuentas de Pago</button>
+        </div>
+
+        <div style="background:#fffaf7; border:2px solid var(--naranja); padding:20px; border-radius:16px; margin-bottom:20px;">
+            <h3 style="color:var(--naranja);">📊 Administrador de Matriz Unificada de Precios</h3>
+            <p style="font-size: 0.75rem; color:#475569; margin-bottom: 15px;">Modifica las tarifas individuales. La IA absorberá estos cambios automáticamente para calcular presupuestos y enganches.</p>
+            
+            <div class="tabs-nav">
+                <button class="tab-btn active" id="btnMatGráfico" type="button">🎨 Diseño Gráfico</button>
+                <button class="tab-btn" id="btnMatVideo" type="button">🎬 Edición & Animación</button>
+                <button class="tab-btn" id="btnMatOtros" type="button">📦 Otros & Especiales</button>
+            </div>
+
+            <div id="editorMatrizContenedor" style="display: grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 15px;"></div>
+            <button class="btn-upload" id="btnSaveMatrixData" style="background:var(--naranja);">Guardar Cambios de la Matriz en la Nube</button>
+        </div>
+
+        <div style="background:#f0f4f8; border:1px solid var(--azul-marino); padding:20px; border-radius:16px; margin-bottom:20px;">
+            <h3 style="color:var(--azul-marino); margin-bottom:5px;">📤 Cargar Entrega de David para Cliente</h3>
+            <div class="form-group">
+                <label>NOMBRE DEL CLIENTE / PROYECTO</label>
+                <input type="text" id="adminFolderInput" placeholder="Ej. Globovisión, Nailuj, Evento Carrera">
+            </div>
+            <div class="form-group">
+                <label>CÓDIGO ÚNICO DEL PROYECTO DESTINO</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="adminProjectCodeInput" placeholder="Ej. DV26-4819" style="text-transform: uppercase; font-weight:bold; letter-spacing:1px;">
+                    <button class="btn-gallery" type="button" style="padding:0 15px; font-size:0.8rem;" id="btnGenerateRandomCode">Generar</button>
+                </div>
+            </div>
+            <div class="drop-zone" id="dropZone">Seleccionar material terminado</div>
+            <input type="file" id="adminFileInput" hidden multiple>
+            
+            <div class="fitness-progress-container" id="adminProgressBox">
+                <div class="fitness-athlete-box" id="adminAthlete">🏃‍♂️</div>
+                <div class="fitness-status-txt" id="adminProgressTxt">Preparando carga... 0%</div>
+                <div class="fitness-bar-bg">
+                    <div class="fitness-bar-fill" id="adminProgressBarFill"></div>
+                </div>
+            </div>
+            
+            <button class="btn-upload" id="btnAdminUploadFiles" style="background:var(--naranja);">🚀 Cargar Entrega y Alertas con Voz</button>
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid var(--borde); padding:20px; border-radius:12px; margin-bottom:20px;">
+            <h3>Editar Perfil de Presentación</h3>
+            <div class="form-group">
+                <label>SUBIR TU FOTO (JPG / PNG)</label>
+                <input type="file" id="adminPhotoInput" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label>DESCRIPCIÓN PROFESIONAL</label>
+                <textarea id="adminDescInput" rows="3">Productor audiovisual y diseñador gráfico. Especialista en la creación de interfaces minimalistas, identidad corporativa y edición cinematográfica de alta calidad.</textarea>
+            </div>
+            <button class="btn-upload" style="width:auto; padding:8px 20px;" id="btnSaveAdminProfile">Guardar Cambios de Perfil</button>
+        </div>
+
+        <div style="background:#fffaf7; border:1px solid #ffe4d3; padding:20px; border-radius:12px; margin-bottom:20px;">
+            <h3>📢 Configurar Ventana Emergente (Comunicado)</h3>
+            <div class="form-group">
+                <label>TÍTULO DEL POP-UP</label>
+                <input type="text" id="adminPopupTitle" placeholder="Ej. ¡Novedades de la semana!">
+            </div>
+            <div class="form-group">
+                <label>TEXTO O MENSAJE GENERAL</label>
+                <textarea id="adminPopupText" rows="2" placeholder="Escribe tu anuncio aquí..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>ENLACE DE VIDEO (YOUTUBE EMBED)</label>
+                <input type="text" id="adminPopupVideo" placeholder="Ej. https://www.youtube.com/embed/XXXXXX">
+            </div>
+            <button class="btn-main" style="width:auto; padding:8px 20px;" id="btnSavePopupConfig">Publicar Comunicado</button>
+        </div>
+
+        <h3>Seguimiento Financiero y Monitor de Archivos</h3>
+        <div class="form-group">
+            <input type="text" id="tableFilterInput" placeholder="🔍 Filtrar por proyecto, archivo o código único...">
+        </div>
+        <div class="admin-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Origen</th>
+                        <th>Cliente / Tipo</th>
+                        <th>Archivo</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody"></tbody>
+            </table>
+        </div>
+        
+        <div class="nav-actions">
+            <button class="btn-gallery" style="background:transparent; border:1px solid var(--borde); width:100%; max-width:250px;" id="btnBackFromAdmin">← Volver al Inicio</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getStorage, ref as sRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
+    import { getDatabase, ref as dRef, set, get, child } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDmtI70sEjbB6k3tkgtVuSYHBclDh6tiLE",
+        authDomain: "mi-portal-84bd1.firebaseapp.com",
+        projectId: "mi-portal-84bd1",
+        storageBucket: "mi-portal-84bd1.firebasestorage.app",
+        messagingSenderId: "153791649699",
+        appId: "1:153791649699:web:a3db5d540b874168b1ec16",
+        measurementId: "G-23QLTK5ZGZ",
+        databaseURL: "https://mi-portal-84bd1-default-rtdb.firebaseio.com/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const storage = getStorage(app);
+    const realDB = getDatabase(app);
+
+    let activeClientValidatedCode = "";
+    let fotoBase64 = "";
+    
+    // Variables locales para las pasarelas
+    let linkPaypalActivo = "https://www.paypal.me";
+    let idBinanceActivo = "No configurado aún";
+
+    let currentStep = 1;
+    let orderData = {
+        modalidad: "", 
+        itemsSeleccionados: [],
+        totalInversion: 0,
+        planEscogido: "",
+        nombreCliente: "",
+        telefonoCliente: "",
+        codigoUnico: "",
+        esquemaPago: "",
+        metricaEnganche: ""
+    };
+
+    let servicesMatrix = {
+        diseno: {
+            "Flyer": 15, "Infografía": 10, "Brochure": 15, "POP": 20, 
+            "Portadas": 40, "Mockup": 30, "Logo": 60, "Manual de Marca": 150
+        },
+        video: {
+            "Flyer Animado": 30, "Promo": 60, "Logo Animado": 50, 
+            "Reels": 25, "Escenas con I.A": 25, "Edición de Video": 70, "Animación": 100
+        },
+        otros: {
+            "Paquete Gráfico": 250, "Destacados": 10, "Coletilla": 80, "Plantillas RRSS": 60
+        }
+    };
+
+    window.isUploading = false;
+
+    window.addEventListener('beforeunload', (e) => {
+        if (window.isUploading) {
+            e.preventDefault();
+            e.returnValue = 'Hay una transferencia de archivos en curso. Si sales o actualizas la página, la descarga se cancelará de forma irreversible.';
+            return e.returnValue;
+        }
+    });
+
+    // SISTEMAconversacional DE VOZ CON REPRODUCCIÓN AUTOMÁTICA DEL VIDEO MP4 DE PLUMÍN
+    function decir(texto) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = 'es-ES';
+            
+            const vplumin = document.getElementById('avatarVideo');
+            utterance.onstart = () => {
+                if(vplumin) {
+                    vplumin.currentTime = 0;
+                    vplumin.play().catch(err => console.log("Se requiere interacción para reproducir material multimedia."));
+                }
+            };
+            utterance.onend = () => { if(vplumin) vplumin.pause(); };
+            utterance.onerror = () => { if(vplumin) vplumin.pause(); };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    function callarIa() {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        const vplumin = document.getElementById('avatarVideo');
+        if (vplumin) vplumin.pause();
+    }
+
+    // PROCESADORconversacional EXPANDIDO CON SOPORTE DE SALUDO INICIAL (REPARADO)
+    function procesarMensajeIa() {
+        const inputField = document.getElementById('clientIaTextInput');
+        const query = inputField.value.trim().toLowerCase();
+        if(!query) return;
+
+        callarIa();
+        const aiBox = document.getElementById('aiResponse');
+        const container = document.getElementById('iaStepContent');
+        ocultarPaneles();
+        document.getElementById('panelIaPasos').style.display = 'flex';
+
+        // Redirección de Código Único Directo
+        const codeRegex = /(dv26-\d{4})/i;
+        if (codeRegex.test(query)) {
+            const codigoDetectado = query.match(codeRegex)[0].toUpperCase();
+            const msgRedireccion = `He reconocido tu código de proyecto ${codigoDetectado}. Te estoy redirigiendo de inmediato al canal seguro de descargas.`;
+            aiBox.innerText = msgRedireccion; decir(msgRedireccion);
+            
+            container.innerHTML = `
+                <p style="font-size:0.85rem; text-align:center; color:var(--naranja); font-weight:600;">Sincronizando canal de seguridad...</p>
+                <button class="btn-upload" id="btnAutoRedirectControl">Acceder a mis archivos</button>
+            `;
+            document.getElementById('clientProjectCodeInput').value = codigoDetectado;
+            document.getElementById('btnAutoRedirectControl').addEventListener('click', () => {
+                document.getElementById('privateGallerySection').style.display = 'none';
+                document.getElementById('codeVerificationBlock').style.display = 'block';
+                changeScreen('screenControl');
+                document.getElementById('btnVerifyProjectCode').click();
+            });
+            inputField.value = "";
+            return;
+        }
+
+        // Bienvenida y Saludos fluidos recuperados
+        if(query === "hola" || query === "buenas" || query === "buenos dias" || query === "buenas tardes" || query.includes("saludos")) {
+            const msgSaludo = `¡Hola! Qué gusto saludarte. Soy Plumín, el asistente virtual de David Hernández. Estoy aquí para asistirte en el cálculo de presupuestos, selección de planes mensuales o darte tus archivos terminados. ¿En qué puedo ayudarte hoy?`;
+            aiBox.innerText = msgSaludo; decir(msgSaludo);
+
+            container.innerHTML = `
+                <button class="btn-option" id="btnSalNuevo">✨ Soy cliente nuevo / Cotizar una pieza</button>
+                <button class="btn-option" id="btnSalExistente" style="margin-top:8px;">💼 Ya soy cliente / Intercambio de archivos</button>
+            `;
+            document.getElementById('btnSalNuevo').addEventListener('click', () => { startIaWizard(); });
+            document.getElementById('btnSalExistente').addEventListener('click', () => { changeScreen('screenControl'); });
+            inputField.value = "";
+            return;
+        }
+
+        // Fallback de Cotizaciones Automáticas
+        const msgDefault = `Entendido. Vamos a cargar nuestro cotizador inteligente paso a paso para procesar tu orden estructurada con David.`;
+        aiBox.innerText = msgDefault; decir(msgDefault);
+        startIaWizard();
+        inputField.value = "";
+    }
+
+    // EVENTOSconversacionales DE ENVIAR CON CLIC Y CON ENTER SANEADOS
+    document.getElementById('btnSendClientIaText').addEventListener('click', procesarMensajeIa);
+    document.getElementById('clientIaTextInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            procesarMensajeIa();
+        }
+    });
+
+    document.getElementById('clientProjectCodeInput').addEventListener('keydown', function(e) {
+        if(e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('btnVerifyProjectCode').click();
+        }
+    });
+
+    document.getElementById('passwordInput').addEventListener('keydown', function(e) {
+        if(e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('btnAdminLoginSubmit').click();
+        }
+    });
+
+    // INTERACCIÓN DE BOTÓN BINANCE POP-UP
+    document.getElementById('btnBinanceModalTrigger').addEventListener('click', () => {
+        alert(`🟡 COBRO BINANCE PAY\n\nBeneficiario: David Hernández Silva\n🔑 Datos de Cuenta: ${idBinanceActivo}\n\nIntroduce estos datos en tu billetera de Binance para realizar tu transferencia de forma segura.`);
+    });
+
+    function ocultarPaneles() {
+        document.getElementById('panelInicial').style.display = 'none';
+        document.getElementById('panelExistente').style.display = 'none';
+        document.getElementById('panelIaPasos').style.display = 'none';
+    }
+
+    function changeScreen(screenId) {
+        if (window.isUploading) {
+            alert("⚠️ Hay una transferencia de material activa. Por favor, espera a que finalice para evitar la cancelación del envío.");
+            return;
+        }
+        callarIa();
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        localStorage.setItem('currentScreenDavid', screenId);
+        if(screenId === 'screenAdmin') {
+            renderizarTablaAdmin();
+            renderAdminMatrixEditor('diseno');
+        }
+    }
+
+    function regresarAlInicio() {
+        document.getElementById('loginBox').style.display = 'none';
+        changeScreen('screenMain');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const lastScreen = localStorage.getItem('currentScreenDavid') || 'screenMain';
+        changeScreen(lastScreen);
+        cargarConfiguracionesIniciales();
+    });
+
+    function alternarPestañasCliente(tabId, targetBtn) {
+        document.querySelectorAll('#screenControl .tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('#screenControl .tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        targetBtn.classList.add('active');
+    }
+
+    document.getElementById('btnTabDescargar').addEventListener('click', (e) => alternarPestañasCliente('tabDescargar', e.currentTarget));
+    document.getElementById('btnTabSubir').addEventListener('click', (e) => alternarPestañasCliente('tabSubir', e.currentTarget));
+
+    // --- MÁQUINA DE ESTADOS IA INTERACTIVA ---
+    document.getElementById('avatarIa').addEventListener('click', () => {
+        ocultarPaneles();
+        document.getElementById('panelInicial').style.display = 'flex';
+        const txt = "Hola. Por favor indícame si ya eres un cliente existente con entregas pendientes o si eres un cliente nuevo buscando cotizar servicios.";
+        document.getElementById('aiResponse').innerText = txt; decir(txt);
+    });
+
+    document.getElementById('btnExistenteFlow').addEventListener('click', () => { 
+        ocultarPaneles(); 
+        document.getElementById('panelExistente').style.display = 'flex'; 
+    });
+    
+    document.getElementById('btnNuevoFlow').addEventListener('click', () => { 
+        ocultarPaneles(); 
+        startIaWizard(); 
+    });
+
+    document.getElementById('btnCancelExistente').addEventListener('click', () => { 
+        ocultarPaneles(); 
+        document.getElementById('panelInicial').style.display = 'flex'; 
+    });
+
+    function startIaWizard() {
+        currentStep = 1;
+        orderData = { modalidad: "", itemsSeleccionados: [], totalInversion: 0, planEscogido: "", nombreCliente: "", telefonoCliente: "", codigoUnico: "", esquemaPago: "", metricaEnganche: "" };
+        document.getElementById('panelIaPasos').style.display = 'flex';
+        renderIaStep();
+    }
+
+    function renderIaStep() {
+        const container = document.getElementById('iaStepContent');
+        const aiBox = document.getElementById('aiResponse');
+        container.innerHTML = "";
+
+        if (currentStep === 1) {
+            const txt = "¡Hola! Qué gusto saludarte. Soy el asistente virtual de David Hernández. Para darte la solución perfecta, cuéntame: ¿Estás buscando una pieza o diseño específico e individual, o necesitas un plan mensual de contenido constante para tu marca?";
+            aiBox.innerText = txt; decir(txt);
+
+            container.innerHTML = `
+                <button class="btn-option" id="btnStep1Fija">📌 Necesito una pieza o proyecto específico (Tarifa fija).</button>
+                <button class="btn-option" id="btnStep1Mensual" style="margin-top:8px;">📅 Necesito soporte mensual (Plan recurrente).</button>
+                <button class="btn-gallery" style="background:transparent; border:1px solid var(--borde); width:100%; margin-top:12px;" onclick="window.location.reload()">← Cancelar</button>
+            `;
+
+            document.getElementById('btnStep1Fija').addEventListener('click', () => { orderData.modalidad = "Individual"; currentStep = 2; renderIaStep(); });
+            document.getElementById('btnStep1Mensual').addEventListener('click', () => { orderData.modalidad = "Mensual"; currentStep = 22; renderIaStep(); });
+        }
+
+        else if (currentStep === 2) {
+            const txt = "Perfecto. Selecciona las piezas específicas que requieres para tu proyecto y calcularé el presupuesto de inmediato.";
+            aiBox.innerText = txt; decir(txt);
+
+            let HTMLMatrix = `<div class="matrix-grid">`;
+            for (let cat in servicesMatrix) {
+                for (let service in servicesMatrix[cat]) {
+                    HTMLMatrix += `
+                        <label class="matrix-item">
+                            <input type="checkbox" class="chk-service" data-name="${service}" data-price="${servicesMatrix[cat][service]}">
+                            <span>${service} ($${servicesMatrix[cat][service]})</span>
+                        </label>`;
+                }
+            }
+            HTMLMatrix += `</div>`;
+
+            container.innerHTML = `
+                <h4 style="margin:0 0 10px 0; font-size:0.85rem;">Catálogo de Servicios Disponibles:</h4>
+                ${HTMLMatrix}
+                <button class="btn-upload" id="btnCalcIndividual" style="margin-top:12px; background:var(--azul-marino);">Calcular Presupuesto</button>
+            `;
+
+            document.getElementById('btnCalcIndividual').addEventListener('click', () => {
+                const checkboxes = document.querySelectorAll('.chk-service:checked');
+                if (checkboxes.length === 0) return alert("Por favor selecciona al menos un servicio de la matriz.");
+                
+                orderData.totalInversion = 0;
+                orderData.itemsSeleccionados = [];
+                checkboxes.forEach(chk => {
+                    let name = chk.getAttribute('data-name');
+                    let price = parseFloat(chk.getAttribute('data-price'));
+                    orderData.totalInversion += price;
+                    orderData.itemsSeleccionados.push(`${name} ($${price})`);
+                });
+                
+                currentStep = 3; 
+                renderIaStep();
+            });
+        }
+
+        else if (currentStep === 3) {
+            const txt = `Excelente elección. Tu selección de [${orderData.itemsSeleccionados.join(', ')}] tiene una inversión total de $${orderData.totalInversion}. Por cierto, si tu marca va a necesitar contenido constante para redes este mes (más de 10 imágenes), tal vez te convenga mirar nuestros planes mensuales desde $150 donde cada diseño te saldría a una fracción de su costo individual. ¿Te gustaría mantener la tarifa fija o echarle un ojo al plan mensual?`;
+            aiBox.innerText = txt; decir(txt);
+
+            container.innerHTML = `
+                <button class="btn-option" id="btnHookFijo" style="border-color:var(--naranja);">Mantener tarifa fija estándar</button>
+                <button class="btn-option" id="btnHookMensual" style="margin-top:8px; background:#fff5ef; border-color:var(--naranja);">👁️ Ver Planes Mensuales Recomendados</button>
+            `;
+
+            document.getElementById('btnHookFijo').addEventListener('click', () => {
+                orderData.metricaEnganche = "Tarifa Estándar Aplicada";
+                orderData.esquemaPago = `Inicial del 60% ($${(orderData.totalInversion * 0.6).toFixed(2)}) y 40% contra entrega ($${(orderData.totalInversion * 0.4).toFixed(2)})`;
+                currentStep = 4; 
+                renderIaStep();
+            });
+            document.getElementById('btnHookMensual').addEventListener('click', () => { orderData.modalidad = "Mensual"; currentStep = 22; renderIaStep(); });
+        }
+
+        else if (currentStep === 22) {
+            const txt = "Excelente decisión. El soporte recurrente es la mejor opción para potenciar tu marca. ¿En qué área deseas enfocar tu plan mensual constante?";
+            aiBox.innerText = txt; decir(txt);
+
+            container.innerHTML = `
+                <button class="btn-option" id="btnPlanImg">🎨 Plan Mensual de Diseño Gráfico (Imágenes)</button>
+                <button class="btn-option" id="btnPlanVideo" style="margin-top:8px;">🎬 Plan Mensual de Edición y Animación (Videos)</button>
+            `;
+
+            document.getElementById('btnPlanImg').addEventListener('click', () => {
+                orderData.planEscogido = "Rango Mensual Gráfico: $150 a $350 (Máx 3 meses de contrato)";
+                orderData.totalInversion = 250; 
+                orderData.metricaEnganche = "Cálculo de enganche automático de volumen aplicado";
+                orderData.esquemaPago = `Quincenal de $${(orderData.totalInversion / 2).toFixed(2)} los 15 y último de cada mes`;
+                currentStep = 4;
+                renderIaStep();
+            });
+
+            document.getElementById('btnPlanVideo').addEventListener('click', () => {
+                currentStep = 23; 
+                renderIaStep();
+            });
+        }
+
+        else if (currentStep === 23) {
+            const txt = "Disponemos de rangos de $200 a $600 mensuales. Selecciona el volumen de producción estimado para tu marca:";
+            aiBox.innerText = txt; decir(txt);
+
+            container.innerHTML = `
+                <button class="btn-option" id="btnPlanVideoMax">🔥 Plan Premium: 60 videos (2 diarios) por $600/mes</button>
+                <button class="btn-option" id="btnPlanVideoMin" style="margin-top:8px;">Plan Básico: Producción regular por $200/mes</button>
+            `;
+
+            document.getElementById('btnPlanVideoMax').addEventListener('click', () => {
+                orderData.planEscogido = "Paquete Mensual de 60 Videos";
+                orderData.totalInversion = 600;
+                orderData.metricaEnganche = "$10 por video (Ahorro del 60% frente a la tarifa individual de $25 por Reel que sumaría $1,500)";
+                orderData.esquemaPago = `Quincenal de $300 los 15 y último de cada mes`;
+                currentStep = 4;
+                renderIaStep();
+            });
+
+            document.getElementById('btnPlanVideoMin').addEventListener('click', () => {
+                orderData.planEscogido = "Plan Recurrente de Video Estándar";
+                orderData.totalInversion = 200;
+                orderData.metricaEnganche = "Ahorro por volumen mensual optimizado";
+                orderData.esquemaPago = `Quincenal de $100 los 15 y último de cada mes`;
+                currentStep = 4;
+                renderIaStep();
+            });
+        }
+
+        else if (currentStep === 4) {
+            if (orderData.modalidad === "Mensual" && !orderData.esquemaPago) {
+                orderData.esquemaPago = `Quincenal de $${(orderData.totalInversion / 2).toFixed(2)} los 15 y último de cada mes`;
+            }
+            const txt = `Para tu comodidad, la inversión de tu proyecto cuenta con facilidades. Esquema asignado: ${orderData.esquemaPago}. Por favor, confírmame tu nombre o empresa y número de contacto para agendarte.`;
+            aiBox.innerText = txt; decir(txt);
+
+            container.innerHTML = `
+                <div class="form-group">
+                    <label>NOMBRE O RAZÓN SOCIAL</label>
+                    <input type="text" id="wizardName" placeholder="Ej. Globovisión / Tu Marca">
+                </div>
+                <div class="form-group">
+                    <label>TELÉFONO / WHATSAPP</label>
+                    <input type="text" id="wizardPhone" placeholder="Ej. 04120000000">
+                </div>
+                <button class="btn-upload" id="btnFinishWizard" style="background:var(--naranja);">Generar Código de Proyecto</button>
+            `;
+
+            document.getElementById('btnFinishWizard').addEventListener('click', async () => {
+                const nameIn = document.getElementById('wizardName').value.trim();
+                const phoneIn = document.getElementById('wizardPhone').value.trim();
+                
+                if (!nameIn || !phoneIn) return alert("Todos los campos son estrictamente obligatorios para el registro seguro.");
+                if (/[\.#\$\/\[\]]/g.test(nameIn)) return alert("El nombre contiene caracteres inválidos.");
+
+                orderData.nombreCliente = nameIn;
+                orderData.telefonoCliente = phoneIn;
+                
+                orderData.codigoUnico = "DV26-" + Math.floor(1000 + Math.random() * 9000);
+
+                const cleanKey = nameIn.replace(/[\.#\$\/\[\]]/g, "_") + "_" + Date.now();
+                await set(dRef(realDB, 'clientes_nuevos/' + cleanKey), {
+                    nombre: orderData.nombreCliente,
+                    telefono: orderData.telefonoCliente,
+                    codigoAsignado: orderData.codigoUnico,
+                    modalidad: orderData.modalidad,
+                    totalInversion: orderData.totalInversion,
+                    fecha: new Date().toISOString().split('T')[0]
+                });
+
+                currentStep = 5; 
+                renderIaStep();
+            });
+        }
+
+        else if (currentStep === 5) {
+            const txt = `¡Excelente, David te ha asignado el código único de seguridad ${orderData.codigoUnico}! Haz clic abajo para enviarle los detalles de tu orden estructurada directamente a su WhatsApp corporativo.`;
+            aiBox.innerText = txt; decir(txt);
+
+            container.innerHTML = `
+                <button class="btn-whatsapp" id="btnFinalWhatsapp">Enviar pedido por WhatsApp 🚀</button>
+                <button class="btn-gallery" style="background:transparent; border:1px solid var(--borde); width:100%; margin-top:10px;" onclick="window.location.reload()">Regresar al Inicio</button>
+            `;
+
+            document.getElementById('btnFinalWhatsapp').addEventListener('click', () => {
+                const destinoDavid = "584120000000"; 
+                
+                let detalleProyecto = orderData.modalidad === "Individual" 
+                    ? `Diseño Individual: ${orderData.itemsSeleccionados.join(' + ')}`
+                    : `${orderData.planEscogido}`;
+
+                const mensajeCompleto = 
+`NUEVO PROYECTO REGISTRADO
+🔑 Código Único: ${orderData.codigoUnico}
+👤 Cliente: ${orderData.nombreCliente}
+📞 Contacto: ${orderData.telefonoCliente}
+📋 Modalidad Escogida: ${orderData.modalidad}
+🛠️ Detalle: ${detalleProyecto}
+💰 Inversión Total: $${orderData.totalInversion}
+📉 Métrica de Enganche: ${orderData.metricaEnganche}
+🗓️ Esquema de Pago: ${orderData.esquemaPago}`;
+
+                window.open(`https://api.whatsapp.com/send?phone=${destinoDavid}&text=${encodeURIComponent(mensajeCompleto)}`, '_blank');
+            });
+        }
+    }
+
+    // --- GUARDAR CUENTAS DE PAGO DESDE PANEL ADMINISTRATIVO (NUEVO) ---
+    document.getElementById('btnSaveFinancialAccounts').addEventListener('click', async () => {
+        const paypalVal = document.getElementById('adminPaypalInput').value.trim();
+        const binanceVal = document.getElementById('adminBinanceInput').value.trim();
+
+        if(!paypalVal || !binanceVal) return alert("Por favor rellena ambas pasarelas de cobro.");
+
+        try {
+            await set(dRef(realDB, 'config/pagos'), {
+                paypal: paypalVal,
+                binance: binanceVal
+            });
+            linkPaypalActivo = paypalVal;
+            idBinanceActivo = binanceVal;
+            document.getElementById('btnPaypalLink').href = paypalVal;
+            alert("¡Pasarelas financieras de PayPal y Binance actualizadas con éxito en la nube David!");
+        } catch(err) { alert("Error al subir configuración financiera."); }
+    });
+
+    // --- PANEL ADMINISTRADOR: GESTIÓN DE MATRIZ ---
+    function renderAdminMatrixEditor(category) {
+        const wrapper = document.getElementById('editorMatrizContenedor');
+        wrapper.innerHTML = "";
+        
+        let targetData = servicesMatrix[category];
+        for (let key in targetData) {
+            wrapper.innerHTML += `
+                <div style="background:white; padding:8px; border:1px solid var(--borde); border-radius:8px;">
+                    <label style="font-size:0.68rem; font-weight:bold; color:var(--azul-marino);">${key.toUpperCase()}</label>
+                    <input type="number" class="matrix-input-edit" data-cat="${category}" data-key="${key}" value="${targetData[key]}" style="padding:6px; font-size:0.85rem;">
+                </div>
+            `;
+        }
+    }
+
+    document.getElementById('btnMatGráfico').addEventListener('click', (e) => { 
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
+        e.target.classList.add('active'); renderAdminMatrixEditor('diseno'); 
+    });
+    document.getElementById('btnMatVideo').addEventListener('click', (e) => { 
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
+        e.target.classList.add('active'); renderAdminMatrixEditor('video'); 
+    });
+    document.getElementById('btnMatOtros').addEventListener('click', (e) => { 
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
+        e.target.classList.add('active'); renderAdminMatrixEditor('otros'); 
+    });
+
+    document.getElementById('btnSaveMatrixData').addEventListener('click', async () => {
+        const inputs = document.querySelectorAll('.matrix-input-edit');
+        inputs.forEach(input => {
+            let cat = input.getAttribute('data-cat');
+            let key = input.getAttribute('data-key');
+            let val = parseFloat(input.value) || 0;
+            servicesMatrix[cat][key] = val;
+        });
+
+        try {
+            await set(dRef(realDB, 'config/matriz'), servicesMatrix);
+            alert("¡Matriz unificada de precios actualizada con éxito en Firebase, David! La IA asimilará los nuevos costos de inmediato.");
+        } catch(e) { alert("Error de red al guardar la matriz."); }
+    });
+
+    // --- ENLACE DEL BOTÓN GESTIÓN DE ARCHIVOS ---
+    document.getElementById('btnGoControl').addEventListener('click', () => {
+        document.getElementById('privateGallerySection').style.display = 'none';
+        document.getElementById('codeVerificationBlock').style.display = 'block';
+        document.getElementById('clientProjectCodeInput').value = '';
+        changeScreen('screenControl');
+    });
+
+    // Verificación de Código e Ingreso a Canal Protegido
+    document.getElementById('btnVerifyProjectCode').addEventListener('click', async () => {
+        const code = document.getElementById('clientProjectCodeInput').value.trim().toUpperCase();
+        if(!code) return alert("Por favor introduce tu código único.");
+        
+        const gallery = document.getElementById('galleryContent');
+        gallery.innerHTML = '<p style="font-size:0.85rem;">Sincronizando canal protegido con David...</p>';
+        
+        try {
+            const snapshot = await get(child(dRef(realDB), "proyectos"));
+            gallery.innerHTML = '';
+            let count = 0;
+            
+            if(snapshot.exists()) {
+                const data = snapshot.val();
+                for(let key in data) {
+                    if(data[key].codigoProyecto === code && data[key].subidoPor === "David") {
+                        count++;
+                        gallery.innerHTML += `
+                            <div style="padding:10px; border-bottom:1px solid var(--borde); display:flex; justify-content:space-between; align-items:center;">
+                                <div><strong>${data[key].archivo}</strong><br><small style="color:#64748b;">${data[key].fecha || ''}</small></div>
+                                <a href="${data[key].urlDownload}" target="_blank" style="color:var(--naranja); font-weight:bold; text-decoration:none; font-size:0.85rem;">Descargar 📥</a>
+                            </div>`;
+                    }
+                }
+            }
+            if(count === 0) {
+                gallery.innerHTML = '<p style="font-size:0.8rem; color:#64748b; margin:0;">No hay archivos cargados por David para este código todavía.</p>';
+            }
+            document.getElementById('codeVerificationBlock').style.display = 'none';
+            document.getElementById('privateGallerySection').style.display = 'block';
+            
+            activeClientValidatedCode = code;
+            decir("Canal privado sincronizado");
+        } catch(err) { alert("Error de conexión con Realtime Database."); }
+    });
+
+    document.getElementById('btnLockChannel').addEventListener('click', () => {
+        activeClientValidatedCode = "";
+        document.getElementById('privateGallerySection').style.display = 'none';
+        document.getElementById('codeVerificationBlock').style.display = 'block';
+    });
+
+    document.getElementById('btnGenerateRandomCode').addEventListener('click', () => {
+        document.getElementById('adminProjectCodeInput').value = "DV26-" + Math.floor(1000 + Math.random() * 9000);
+    });
+
+    // Carga Masiva y Concurrente del Cliente
+    document.getElementById('clientDropZone').addEventListener('click', () => document.getElementById('clientFileInput').click());
+    document.getElementById('clientFileInput').addEventListener('change', function() {
+        if (this.files.length > 0) document.getElementById('clientDropZone').innerText = `${this.files.length} archivo(s) seleccionado(s)`;
+    });
+
+    document.getElementById('btnClientUploadFiles').addEventListener('click', async () => {
+        const fileInput = document.getElementById('clientFileInput');
+        const files = fileInput.files;
+        if (!activeClientValidatedCode) return alert('Acción rechazada: Valida primero tu código de proyecto en el panel.');
+        if (!files || files.length === 0) return alert('Por favor selecciona referencias válidas.');
+
+        const progressBox = document.getElementById('clientProgressBox');
+        progressBox.style.display = 'block';
+        const btn = document.getElementById('btnClientUploadFiles');
+
+        try {
+            btn.disabled = true;
+            window.isUploading = true;
+
+            const totalBytes = Array.from(files).reduce((sum, f) => sum + f.size, 0);
+            const loadedBytes = new Array(files.length).fill(0);
+
+            const promises = Array.from(files).map((file, idx) => {
+                const storageRef = sRef(storage, `uploads/${activeClientValidatedCode}/cliente_input/${file.name}`);
+                const uploadTask = uploadBytesResumable(storageRef, file);
+
+                return new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed', 
+                        (snapshot) => {
+                            loadedBytes[idx] = snapshot.bytesTransferred;
+                            const currentLoaded = loadedBytes.reduce((a, b) => a + b, 0);
+                            actualizarAtletaGimnasio((currentLoaded / totalBytes) * 100, 'clientAthlete', 'clientProgressTxt', 'clientProgressBarFill');
+                        },
+                        (err) => reject(err),
+                        async () => {
+                            const url = await getDownloadURL(uploadTask.snapshot.ref);
+                            const nodeKey = `Client_${activeClientValidatedCode}_${file.name}`.replace(/[\.#\$\/\[\]]/g, "_");
+                            await set(dRef(realDB, 'proyectos/' + nodeKey), {
+                                codigoProyecto: activeClientValidatedCode,
+                                carpeta: "Aportes Cliente",
+                                archivo: file.name,
+                                urlDownload: url,
+                                fecha: new Date().toISOString().split('T')[0],
+                                subidoPor: "Cliente"
+                            });
+                            resolve();
+                        }
+                    );
+                });
+            });
+
+            await Promise.all(promises);
+            decir("Tus referencias han sido cargadas");
+            alert("¡Referencias enviadas a David exitosamente!");
+            fileInput.value = '';
+            document.getElementById('clientDropZone').innerText = 'Toca para seleccionar tus referencias';
+            setTimeout(() => progressBox.style.display = 'none', 3000);
+        } catch(e) { alert("Error crítico en la carga asíncrona masiva."); }
+        finally { btn.disabled = false; window.isUploading = false; }
+    });
+
+    document.getElementById('dropZone').addEventListener('click', () => document.getElementById('adminFileInput').click());
+    document.getElementById('adminFileInput').addEventListener('change', function() {
+        if (this.files.length > 0) document.getElementById('dropZone').innerText = `${this.files.length} archivo(s) listo(s)`;
+    });
+
+    document.getElementById('btnAdminUploadFiles').addEventListener('click', async () => {
+        const fileInput = document.getElementById('adminFileInput');
+        const files = fileInput.files;
+        const code = document.getElementById('adminProjectCodeInput').value.trim().toUpperCase();
+        const folder = document.getElementById('adminFolderInput').value.trim() || "General";
+
+        if(!code || !files || files.length === 0) return alert("Completa código y selecciona archivos.");
+
+        const progressBox = document.getElementById('adminProgressBox');
+        progressBox.style.display = 'block';
+        const btn = document.getElementById('btnAdminUploadFiles');
+
+        try {
+            btn.disabled = true;
+            window.isUploading = true;
+
+            const totalBytes = Array.from(files).reduce((sum, f) => sum + f.size, 0);
+            const loadedBytes = new Array(files.length).fill(0);
+
+            const promises = Array.from(files).map((file, idx) => {
+                const storageRef = sRef(storage, `uploads/${code}/david_output/${file.name}`);
+                const uploadTask = uploadBytesResumable(storageRef, file);
+
+                return new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed', 
+                        (snapshot) => {
+                            loadedBytes[idx] = snapshot.bytesTransferred;
+                            const currentLoaded = loadedBytes.reduce((a, b) => a + b, 0);
+                            actualizarAtletaGimnasio((currentLoaded / totalBytes) * 100, 'adminAthlete', 'adminProgressTxt', 'adminProgressBarFill');
+                        },
+                        (err) => reject(err),
+                        async () => {
+                            const url = await getDownloadURL(uploadTask.snapshot.ref);
+                            const nodeKey = `David_${code}_${file.name}`.replace(/[\.#\$\/\[\]]/g, "_");
+                            await set(dRef(realDB, 'proyectos/' + nodeKey), {
+                                codigoProyecto: code,
+                                carpeta: folder,
+                                archivo: file.name,
+                                urlDownload: url,
+                                fecha: new Date().toISOString().split('T')[0],
+                                subidoPor: "David"
+                            });
+                            resolve();
+                        }
+                    );
+                });
+            });
+
+            await Promise.all(promises);
+            decir("Tu material ha sido cargado con éxito");
+            alert("¡Entrega indexada!");
+            fileInput.value = '';
+            document.getElementById('dropZone').innerText = 'Seleccionar material terminado';
+            renderizarTablaAdmin();
+            setTimeout(() => progressBox.style.display = 'none', 3000);
+        } catch(e) { alert("Fallo de subida de material administrativo."); }
+        finally { btn.disabled = false; window.isUploading = false; }
+    });
+
+    document.getElementById('adminPhotoInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = function(evt) { fotoBase64 = evt.target.result; };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    async function renderizarTablaAdmin() {
+        const tbody = document.getElementById('adminTableBody');
+        try {
+            const snapshot = await get(child(dRef(realDB), "proyectos"));
+            tbody.innerHTML = '';
+            if(snapshot.exists()) {
+                const data = snapshot.val();
+                for (const key in data) {
+                    const item = data[key];
+                    const tr = document.createElement('tr');
+                    const isDavid = item.subidoPor === "David";
+                    const badge = isDavid ? '<span class="badge" style="background:#d1fae5; color:#065f46;">David 📤</span>' : '<span class="badge" style="background:#fef3c7; color:#92400e;">Cliente 📥</span>';
+                    tr.innerHTML = `
+                        <td style="color:var(--naranja);font-weight:bold;">${item.codigoProyecto || 'N/A'}</td>
+                        <td>${badge}</td>
+                        <td><strong>${item.carpeta || 'General'}</strong></td>
+                        <td><a href="${item.urlDownload || '#'}" target="_blank" style="color:var(--azul-marino); font-weight:600;">${item.archivo}</a></td>
+                        <td>${item.fecha || '-'}</td>`;
+                    tbody.appendChild(tr);
+                }
+            }
+        } catch(e) { tbody.innerHTML = '<tr><td colspan="5">Error de sincronización.</td></tr>'; }
+    }
+
+    async function cargarConfiguracionesIniciales() {
+        try {
+            const dbRef = dRef(realDB);
+            
+            const snapshotMatriz = await get(child(dbRef, "config/matriz"));
+            if(snapshotMatriz.exists()) servicesMatrix = snapshotMatriz.val();
+
+            // Sincronizar cuentas de pago dinámicas desde Firebase
+            const snapshotPagos = await get(child(dbRef, "config/pagos"));
+            if(snapshotPagos.exists()) {
+                const dataP = snapshotPagos.val();
+                linkPaypalActivo = dataP.paypal || "https://www.paypal.me";
+                idBinanceActivo = dataP.binance || "No configurado";
+                document.getElementById('btnPaypalLink').href = linkPaypalActivo;
+                document.getElementById('adminPaypalInput').value = linkPaypalActivo;
+                document.getElementById('adminBinanceInput').value = idBinanceActivo;
+            }
+
+            const snapshotPerfil = await get(child(dbRef, "config/perfil"));
+            if (snapshotPerfil.exists()) {
+                const data = snapshotPerfil.val();
+                if (data.descripcion) document.getElementById('displayProfileDesc').innerText = data.descripcion;
+                if (data.foto) document.getElementById('profileImgFrame').innerHTML = `<img src="${data.foto}" alt="David">`;
+            }
+            const snapshotPopup = await get(child(dbRef, "config/comunicado"));
+            if (snapshotPopup.exists()) {
+                const popData = snapshotPopup.val();
+                if (popData.activo && popData.texto) {
+                    document.getElementById('popupTitle').innerText = popData.titulo || "Comunicado";
+                    document.getElementById('popupText').innerText = popData.texto;
+                    if (popData.videoUrl) {
+                        let embedUrl = popData.videoUrl;
+                        if(embedUrl.includes("watch?v=")) embedUrl = embedUrl.replace("watch?v=", "embed/");
+                        document.getElementById('youtubeIframe').src = embedUrl;
+                        document.getElementById('popupVideoFrame').style.display = 'block';
+                    }
+                    document.getElementById('popupModal').style.display = 'flex';
+                }
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    document.getElementById('btnAdminLoginSubmit').addEventListener('click', () => {
+        const user = document.getElementById('usernameInput').value.trim();
+        const pass = document.getElementById('passwordInput').value.trim();
+        if (user === "dsamuelhs" && pass === "dsamuelhs1990") {
+            document.getElementById('usernameInput').value = "";
+            document.getElementById('passwordInput').value = "";
+            document.getElementById('loginBox').style.display = 'none';
+            changeScreen('screenAdmin');
+        } else { alert("Acceso denegado."); }
+    });
+
+    document.getElementById('btnBackFromControl').addEventListener('click', () => regresarAlInicio());
+    document.getElementById('btnBackFromAdmin').addEventListener('click', () => regresarAlInicio());
+    document.getElementById('btnToggleLogin').addEventListener('click', () => {
+        const box = document.getElementById('loginBox');
+        box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+    });
+    document.getElementById('btnClosePopup').addEventListener('click', () => { document.getElementById('popupModal').style.display = 'none'; document.getElementById('youtubeIframe').src = ""; });
+    document.getElementById('btnSaveAdminProfile').addEventListener('click', async () => {
+        const payload = { descripcion: document.getElementById('adminDescInput').value };
+        if(fotoBase64) payload.foto = fotoBase64;
+        await set(dRef(realDB, 'config/perfil'), payload); alert("¡Perfil guardado!");
+    });
+    document.getElementById('btnSavePopupConfig').addEventListener('click', async () => {
+        await set(dRef(realDB, 'config/comunicado'), {
+            titulo: document.getElementById('adminPopupTitle').value.trim(),
+            texto: document.getElementById('adminPopupText').value.trim(),
+            videoUrl: document.getElementById('adminPopupVideo').value.trim(),
+            activo: true
+        }); alert("¡Comunicado guardado!");
+    });
+    document.getElementById('tableFilterInput').addEventListener('keyup', () => {
+        const value = document.getElementById('tableFilterInput').value.toLowerCase();
+        document.querySelectorAll('#adminTableBody tr').forEach(row => { row.style.display = row.innerText.toLowerCase().includes(value) ? '' : 'none'; });
+    });
+
+    function actualizarAtletaGimnasio(progress, athleteId, textId, barId) {
+        const athlete = document.getElementById(athleteId);
+        const text = document.getElementById(textId);
+        const bar = document.getElementById(barId);
+        const roundedPct = Math.round(progress);
+        bar.style.width = `${roundedPct}%`;
+        athlete.className = "fitness-athlete-box"; 
+        
+        if (roundedPct <= 25) {
+            athlete.innerText = "🏃‍♂️"; athlete.classList.add("anim-run");
+            text.innerText = `Calentando / Trotando la ruta... ${roundedPct}%`;
+        } else if (roundedPct <= 50) {
+            athlete.innerText = "🤸‍♂️"; athlete.classList.add("anim-pushup");
+            text.innerText = `¡Dándole duro a las flexiones!... ${roundedPct}%`;
+        } else if (roundedPct <= 75) {
+            athlete.innerText = "🏋️‍♂️"; athlete.classList.add("anim-lift");
+            text.innerText = `¡Levantando peso muerto olímpico!... ${roundedPct}%`;
+        } else if (roundedPct < 100) {
+            athlete.innerText = "🧗‍♂️"; athlete.classList.add("anim-pullup");
+            text.innerText = `¡Colgado haciendo barras fijas!... ${roundedPct}%`;
+        } else {
+            athlete.innerText = "🏆"; athlete.classList.add("anim-victory");
+            text.innerText = `¡Entrenamiento completado con éxito! 100%`;
+        }
+    }
+</script>
+</body>
+</html>
