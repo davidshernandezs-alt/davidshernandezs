@@ -133,19 +133,11 @@
         .tab-panel { display: none; }
         .tab-panel.active { display: block; animation: fadeIn 0.2s ease-in-out; }
 
-        /* NUEVO CÍRCULO DE CARGA MINIMALISTA */
+        /* BARRA DE CARGA MEJORADA */
         .simple-progress-container { background: #f8fafc; border: 1px solid var(--borde); padding: 15px; border-radius: 12px; margin: 15px 0; display: none; text-align: center; }
-        .circular-loader {
-            border: 4px solid var(--borde);
-            border-top: 4px solid var(--naranja);
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .fitness-status-txt { font-size: 0.85rem; font-weight: 700; color: var(--azul-marino); }
+        .fitness-status-txt { font-size: 0.8rem; font-weight: 700; color: var(--azul-marino); margin-bottom: 8px; }
+        .progress-bar-bg { background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden; width: 100%; }
+        .progress-bar-fill { background: linear-gradient(90deg, var(--azul-marino), var(--naranja)); width: 0%; height: 100%; transition: width 0.2s ease; }
 
         /* Modales */
         .announcement-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 37, 64, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; display: none; }
@@ -189,6 +181,7 @@
 </head>
 <body>
 
+<!-- MODAL COMUNICADOS -->
 <div class="announcement-modal" id="popupModal">
     <div class="announcement-content">
         <span class="close-modal" id="btnClosePopup">&times;</span>
@@ -200,6 +193,7 @@
     </div>
 </div>
 
+<!-- MODAL DE ADVERTENCIA DE CARGA -->
 <div class="announcement-modal" id="uploadWarningModal" style="z-index: 2000;">
     <div class="announcement-content" style="border: 2px solid var(--naranja);">
         <h2 style="font-size:1.2rem; color:var(--naranja); margin-top:10px;">⚠️ Carga en Progreso</h2>
@@ -211,8 +205,26 @@
     </div>
 </div>
 
+<!-- MODAL DE BÓVEDA DE PAGOS SEGUROS -->
+<div class="announcement-modal" id="paymentModal" style="z-index: 1500;">
+    <div class="announcement-content">
+        <span class="close-modal" id="btnClosePayment">&times;</span>
+        <h2 style="font-size:1.2rem; color:var(--azul-marino); margin-top:10px;">💳 Bóveda de Pagos</h2>
+        
+        <div id="paymentLockedState">
+            <p style="font-size:0.85rem; color:#475569; margin-bottom:15px; line-height:1.4;">Por motivos de seguridad y para proteger los datos bancarios y de identidad de David, debes ingresar tu <strong>Código de Proyecto</strong> para desbloquear las cuentas receptoras.</p>
+            <input type="text" id="paymentSecurityCode" placeholder="Ej. DV26-1234" style="text-transform: uppercase; font-size:1.1rem; letter-spacing: 1px; font-weight:bold; text-align:center; padding:12px; width:100%; margin-bottom:15px; border:2px solid var(--borde); border-radius:8px; color:var(--azul-marino); box-sizing:border-box;">
+            <button class="btn-upload" id="btnUnlockPayments" style="background:var(--naranja);">🔓 Desbloquear Cuentas de Pago</button>
+        </div>
+
+        <div id="paymentUnlockedState" style="display:none; text-align:left;">
+            </div>
+    </div>
+</div>
+
 <div class="container">
     
+    <!-- PANTALLA 1: HOME -->
     <div id="screenMain" class="screen active">
         <h1>Asistente Inteligente</h1>
         
@@ -240,7 +252,7 @@
                 <div class="chat-box" id="aiResponse">Haz clic en mi avatar o escríbeme abajo para iniciar la asistencia personalizada.</div>
                 
                 <div class="client-reply-box">
-                    <textarea id="clientIaTextInput" rows="2" placeholder="Escribe tu consulta (ej. hola, necesito un logo, edición de video)..."></textarea>
+                    <textarea id="clientIaTextInput" rows="2" placeholder="Escribe tu consulta (ej. hola, necesito un logo, un flyer, edición de video)..."></textarea>
                     <button class="btn-upload" style="padding:8px; font-size:0.8rem; background:var(--azul-marino);" id="btnSendClientIaText">Enviar a la IA</button>
                 </div>
             </div>
@@ -260,13 +272,13 @@
                         💳 Métodos de Pago Rápidos
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <a id="btnPaypalLink" href="#" target="_blank" style="background: #003087; color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 6px;">
+                        <button class="payment-btn-trigger" style="background: #003087; color: white; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; border:none; cursor:pointer;">
                             🔵 Pagar con PayPal
-                        </a>
-                        <button id="btnBinanceModalTrigger" style="background: #f3ba2f; color: #1e2026; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; border:none; cursor:pointer;">
+                        </button>
+                        <button class="payment-btn-trigger" style="background: #f3ba2f; color: #1e2026; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; border:none; cursor:pointer;">
                             🟡 Binance Pay (ID / Correo)
                         </button>
-                        <button id="btnOtrosBancosModalTrigger" style="background: #10b981; color: white; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; border:none; cursor:pointer;">
+                        <button class="payment-btn-trigger" style="background: #10b981; color: white; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; border:none; cursor:pointer;">
                             🟢 Otros Bancos (Pago Móvil / Zelle)
                         </button>
                     </div>
@@ -295,6 +307,12 @@
 
         <div class="portfolio-carousel-title">📁 Visita mi Portafolio Profesional</div>
         <div class="portfolio-carousel">
+            <a href="#" id="btnCarouselPreview" class="portfolio-card-item" style="border-color: var(--naranja);">
+                <div class="portfolio-card-tag" style="color: var(--blanco); background: var(--naranja); padding: 2px 6px; border-radius: 4px; display:inline-block;">NUEVO</div>
+                <div class="portfolio-card-name" style="margin-top:8px;">Vista Previa de Proyecto</div>
+                <div class="portfolio-card-link-text">Ver diseño con marca de agua ↗</div>
+            </a>
+            
             <a href="https://www.behance.net/DSAMUELHS" target="_blank" class="portfolio-card-item">
                 <div class="portfolio-card-tag">Behance</div>
                 <div class="portfolio-card-name">Identidad Visual & Marcas</div>
@@ -313,6 +331,7 @@
         </div>
     </div>
 
+    <!-- PANTALLA 2: INTERCAMBIO PRIVADO (CLIENTES) -->
     <div id="screenControl" class="screen">
         <h1>🔐 Panel de Intercambio Privado</h1>
         
@@ -327,25 +346,37 @@
             
             <div class="tabs-nav">
                 <button class="tab-btn active" id="btnTabDescargar">📥 Mis Entregas</button>
+                <button class="tab-btn" id="btnTabPrevia">👁️ Vistas Previas</button>
                 <button class="tab-btn" id="btnTabSubir">📤 Enviar Recursos</button>
             </div>
 
             <div id="tabDescargar" class="tab-panel active">
                 <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid var(--borde);">
-                    <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--naranja);">Entregas Listas de David</h4>
-                    <div id="galleryContent"></div>
+                    <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--azul-marino);">Entregas Listas (Sin Marca de Agua)</h4>
+                    <p style="font-size:0.75rem; color:#475569; margin-bottom:10px;">Aquí encontrarás tus proyectos listos para descargar una vez confirmado el pago.</p>
+                    <div id="galleryContentFinal"></div>
+                </div>
+            </div>
+
+            <div id="tabPrevia" class="tab-panel">
+                <div style="background:#fffaf7; padding:15px; border-radius:12px; border:1px solid var(--naranja);">
+                    <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--naranja);">Vistas Previas (Borradores)</h4>
+                    <p style="font-size:0.75rem; color:#475569; margin-bottom:10px;">Revisa cómo va tu proyecto. Cuando realices el pago y envíes el comprobante, David liberará la versión limpia en "Mis Entregas".</p>
+                    <div id="galleryContentPrevia"></div>
                 </div>
             </div>
 
             <div id="tabSubir" class="tab-panel">
-                <div style="background:#fffaf7; padding:15px; border-radius:12px; border:1px dashed var(--naranja);">
+                <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px dashed #94a3b8;">
                     <h4 style="margin:0 0 5px 0; font-size:0.9rem; color:var(--azul-marino);">Subir Referencias a David</h4>
                     <div class="drop-zone" id="clientDropZone">Toca para seleccionar tus referencias</div>
                     <input type="file" id="clientFileInput" hidden multiple>
                     
                     <div class="simple-progress-container" id="clientProgressBox">
-                        <div class="circular-loader"></div>
                         <div class="fitness-status-txt" id="clientProgressTxt">Preparando carga... 0%</div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="clientProgressBarFill"></div>
+                        </div>
                     </div>
                     
                     <button class="btn-upload" id="btnClientUploadFiles" style="margin-top:10px; background:var(--azul-marino);">Subir Recursos para David</button>
@@ -360,12 +391,13 @@
         </div>
     </div>
 
+    <!-- PANTALLA 3: ADMIN CON CONTROLADOR DE MATRIZ Y DE CUENTAS DE PAGO -->
     <div id="screenAdmin" class="screen">
         <h1>⚙️ Panel de Control del Administrador</h1>
         
         <div style="background:#f0fbf6; border:2px solid var(--verde-whatsapp); padding:20px; border-radius:16px; margin-bottom:20px;">
-            <h3 style="color:var(--verde-whatsapp); margin-bottom:5px;">💵 Configurar Cuentas de Recaudación Financiera</h3>
-            <p style="font-size: 0.75rem; color:#475569; margin-bottom: 12px;">Modifica tus enlaces de pasarela aquí. La app pública adaptará tus nuevos datos de forma automática en los botones.</p>
+            <h3 style="color:var(--verde-whatsapp); margin-bottom:5px;">💵 Configurar Cuentas de Recaudación</h3>
+            <p style="font-size: 0.75rem; color:#475569; margin-bottom: 12px;">Modifica tus cuentas aquí. Los clientes deberán ingresar su código de proyecto en el Modal de Seguridad para ver esta información.</p>
             <div class="form-group">
                 <label>ENLACE COMPLETO DE PAYPAL ME</label>
                 <input type="text" id="adminPaypalInput" placeholder="Ej. https://www.paypal.me/dsamuelhs">
@@ -396,7 +428,16 @@
         </div>
 
         <div style="background:#f0f4f8; border:1px solid var(--azul-marino); padding:20px; border-radius:16px; margin-bottom:20px;">
-            <h3 style="color:var(--azul-marino); margin-bottom:5px;">📤 Cargar Entrega de David para Cliente</h3>
+            <h3 style="color:var(--azul-marino); margin-bottom:5px;">📤 Cargar Entrega para Cliente</h3>
+            
+            <div class="form-group">
+                <label>TIPO DE ARCHIVO A ENVIAR</label>
+                <select id="adminFileType" style="border-color:var(--naranja); font-weight:600;">
+                    <option value="previa">👁️ Vista Previa (Borrador con Marca de Agua)</option>
+                    <option value="final">✅ Entrega Final (Limpio para Descarga)</option>
+                </select>
+            </div>
+
             <div class="form-group">
                 <label>NOMBRE DEL CLIENTE / PROYECTO</label>
                 <input type="text" id="adminFolderInput" placeholder="Ej. Globovisión, Nailuj, Evento Carrera">
@@ -408,15 +449,17 @@
                     <button class="btn-gallery" type="button" style="padding:0 15px; font-size:0.8rem;" id="btnGenerateRandomCode">Generar</button>
                 </div>
             </div>
-            <div class="drop-zone" id="dropZone">Seleccionar material terminado</div>
+            <div class="drop-zone" id="dropZone">Seleccionar material...</div>
             <input type="file" id="adminFileInput" hidden multiple>
             
             <div class="simple-progress-container" id="adminProgressBox">
-                <div class="circular-loader"></div>
                 <div class="fitness-status-txt" id="adminProgressTxt">Preparando carga... 0%</div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="adminProgressBarFill"></div>
+                </div>
             </div>
             
-            <button class="btn-upload" id="btnAdminUploadFiles" style="background:var(--naranja);">🚀 Cargar Entrega y Alertas con Voz</button>
+            <button class="btn-upload" id="btnAdminUploadFiles" style="background:var(--naranja);">🚀 Cargar Entrega del Proyecto</button>
         </div>
 
         <div style="background:#f8fafc; border:1px solid var(--borde); padding:20px; border-radius:12px; margin-bottom:20px;">
@@ -504,7 +547,7 @@
 
     let currentStep = 1;
     let orderData = {
-        modalidad: "", itemsSeleccionados: [], totalInversion: 0, planEscogido: "", nombreCliente: "", telefonoCliente: "", codigoUnico: "", esquemaPago: "", metricaEnganche: ""
+        modalidad: "", itemsSeleccionados: [], itemsPreseleccionados: [], totalInversion: 0, planEscogido: "", nombreCliente: "", telefonoCliente: "", codigoUnico: "", esquemaPago: "", metricaEnganche: ""
     };
 
     let servicesMatrix = {
@@ -514,8 +557,8 @@
     };
 
     window.isUploading = false;
-    let activeUploadTasks = []; // Para poder cancelar las cargas activas
-    let pendingNavigationScreen = ''; // Guarda a dónde querías ir antes de cancelar
+    let activeUploadTasks = []; 
+    let pendingNavigationScreen = ''; 
 
     window.addEventListener('beforeunload', (e) => {
         if (window.isUploading) {
@@ -551,7 +594,7 @@
         if (vplumin) vplumin.pause();
     }
 
-    // --- NLP Y LÓGICA CONVERSACIONAL POTENCIADA PARA PLUMÍN ---
+    // --- NLP Y LÓGICA CONVERSACIONAL (MEJORADA) ---
     function procesarMensajeIa() {
         const inputField = document.getElementById('clientIaTextInput');
         const query = inputField.value.trim().toLowerCase();
@@ -585,40 +628,47 @@
             return;
         }
 
-        // 2. Detección de Saludos y Frases Clave del Trabajo de David
+        // 2. Extraer Servicios Específicos (NLP Básico)
+        let detectedServices = [];
+        const matrixKeysFlat = {
+            "flyer": "Flyer", "infografía": "Infografía", "brochure": "Brochure", "pop": "POP", "portada": "Portadas", 
+            "mockup": "Mockup", "logo": "Logo", "manual de marca": "Manual de Marca", "promo": "Promo", "reels": "Reels", 
+            "escenas": "Escenas con I.A", "edición de video": "Edición de Video", "animación": "Animación", "paquete gráfico": "Paquete Gráfico", "coletilla": "Coletilla", "plantillas": "Plantillas RRSS"
+        };
+        for (let key in matrixKeysFlat) {
+            if (query.includes(key)) { detectedServices.push(matrixKeysFlat[key]); }
+        }
+
+        // 3. Saludo por hora
         const horaActual = new Date().getHours();
         let saludoPorHora = "buenos días";
         if(horaActual >= 12 && horaActual < 19) saludoPorHora = "buenas tardes";
         else if(horaActual >= 19) saludoPorHora = "buenas noches";
-
         const esSaludo = query.match(/\b(hola|buenas|saludos|buenos d[íi]as|buenas tardes|buenas noches)\b/i);
-        const keywordsTrabajo = ["logo", "diseño", "video", "edición", "edicion", "flyer", "animación", "animacion", "identidad", "audiovisual", "reels", "marca", "arte"];
-        const pideTrabajo = keywordsTrabajo.some(kw => query.includes(kw));
 
-        let mensajeIa = "";
-
-        if (esSaludo && pideTrabajo) {
-            const area = (query.includes('video') || query.includes('edición') || query.includes('reels')) ? 'producción audiovisual' : 'diseño gráfico';
-            mensajeIa = `¡Hola, ${saludoPorHora}! Qué gusto saludarte. Soy Plumín... Veo que necesitas apoyo con ${area}. ¡Estás en el lugar ideal! David se especializa en crear piezas de alto impacto. Usualmente trabajamos artes en formato 1920x1080 o adaptados a tu red social. ¿Buscabas cotizar un proyecto individual o un plan mensual?`;
-        } else if (pideTrabajo) {
-            mensajeIa = `¡Excelente elección! Para tu solicitud sobre diseño o video, David es especialista en crear interfaces, identidad corporativa y edición de alta calidad. ¿Necesitas cotizar un proyecto único y fijo, o prefieres mirar los planes recurrentes con descuento?`;
+        // 4. Lógica de Respuesta Mapeada
+        if (detectedServices.length > 0) {
+            let msg = esSaludo ? `¡Hola, ${saludoPorHora}! ` : "";
+            msg += `He detectado que necesitas: ${detectedServices.join(", ")}. He marcado estos servicios por ti en nuestro cotizador.`;
+            orderData.itemsPreseleccionados = detectedServices;
+            orderData.modalidad = "Individual";
+            startIaWizard(2, msg);
+        } else if (query.includes("video") || query.includes("diseño") || query.includes("mensual")) {
+            let msg = esSaludo ? `¡Hola, ${saludoPorHora}! ` : "";
+            msg += `¡Excelente! Para tu solicitud, David es especialista en crear piezas de alto impacto. ¿Necesitas cotizar un proyecto específico o prefieres un plan mensual recurrente?`;
+            startIaWizard(1, msg);
         } else if (esSaludo) {
-            mensajeIa = `¡Hola, ${saludoPorHora}! Soy Plumín, el asistente virtual de David Hernández. Estoy aquí para ayudarte a calcular presupuestos de diseño y video, elegir planes mensuales o darte acceso a tus entregas. ¿En qué puedo ayudarte hoy?`;
-        } else {
-            mensajeIa = `Entendido. Vamos a cargar nuestro cotizador inteligente paso a paso para procesar tu orden estructurada con David.`;
-        }
-
-        aiBox.innerText = mensajeIa; decir(mensajeIa);
-
-        if (esSaludo && !pideTrabajo) {
+            let msg = `¡Hola, ${saludoPorHora}! Soy Plumín, el asistente virtual de David. ¿Buscas un diseño específico, edición de video o acceder a tus archivos finalizados?`;
+            aiBox.innerText = msg; decir(msg);
             container.innerHTML = `
-                <button class="btn-option" id="btnSalNuevo">✨ Soy cliente nuevo / Cotizar una pieza o video</button>
+                <button class="btn-option" id="btnSalNuevo">✨ Soy cliente nuevo / Cotizar servicios</button>
                 <button class="btn-option" id="btnSalExistente" style="margin-top:8px;">💼 Ya soy cliente / Intercambio de archivos</button>
             `;
-            document.getElementById('btnSalNuevo').addEventListener('click', () => { startIaWizard(); });
+            document.getElementById('btnSalNuevo').addEventListener('click', () => { startIaWizard(1); });
             document.getElementById('btnSalExistente').addEventListener('click', () => { attemptChangeScreen('screenControl'); });
         } else {
-            startIaWizard(); // Arranca directo el wizard si detecta intención de compra o falla
+            let msg = `Entendido. Vamos a cargar nuestro cotizador inteligente paso a paso para procesar tu solicitud con David.`;
+            startIaWizard(1, msg);
         }
         
         inputField.value = "";
@@ -628,23 +678,98 @@
     document.getElementById('clientIaTextInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); procesarMensajeIa(); }
     });
-
     document.getElementById('clientProjectCodeInput').addEventListener('keydown', function(e) {
         if(e.key === 'Enter') { e.preventDefault(); document.getElementById('btnVerifyProjectCode').click(); }
     });
-
+    document.getElementById('paymentSecurityCode').addEventListener('keydown', function(e) {
+        if(e.key === 'Enter') { e.preventDefault(); document.getElementById('btnUnlockPayments').click(); }
+    });
     document.getElementById('passwordInput').addEventListener('keydown', function(e) {
         if(e.key === 'Enter') { e.preventDefault(); document.getElementById('btnAdminLoginSubmit').click(); }
     });
 
-    // INTERACCIÓN DE BOTONES FINANCIEROS (BINANCE Y OTROS BANCOS)
-    document.getElementById('btnBinanceModalTrigger').addEventListener('click', () => {
-        alert(`🟡 COBRO BINANCE PAY\n\nBeneficiario: David Hernández Silva\n🔑 Datos de Cuenta: ${idBinanceActivo}\n\nIntroduce estos datos en tu billetera de Binance para realizar tu transferencia de forma segura.`);
+    // --- MODAL DE BÓVEDA DE PAGOS (DESBLOQUEO SEGURO) ---
+    document.querySelectorAll('.payment-btn-trigger').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('paymentModal').style.display = 'flex';
+            document.getElementById('paymentLockedState').style.display = 'block';
+            document.getElementById('paymentUnlockedState').style.display = 'none';
+            // Auto-rellenar si ya ingresó su código antes
+            document.getElementById('paymentSecurityCode').value = activeClientValidatedCode || ""; 
+        });
     });
-    
-    document.getElementById('btnOtrosBancosModalTrigger').addEventListener('click', () => {
-        alert(`🟢 OTROS MÉTODOS DE PAGO (Nacional/Zelle)\n\n${otrosBancosActivo}\n\nPor favor, envía el comprobante al WhatsApp corporativo de David una vez finalices.`);
+
+    document.getElementById('btnUnlockPayments').addEventListener('click', async () => {
+        const code = document.getElementById('paymentSecurityCode').value.trim().toUpperCase();
+        if(!code) return alert("Por favor ingresa tu código único de proyecto.");
+        
+        const btn = document.getElementById('btnUnlockPayments');
+        btn.innerText = "Verificando Seguridad...";
+
+        try {
+            let isValid = false;
+            
+            // Buscar primero en clientes_nuevos
+            const snapNuevos = await get(child(dRef(realDB), "clientes_nuevos"));
+            if(snapNuevos.exists()){
+                const data = snapNuevos.val();
+                for(let k in data) { if(data[k].codigoAsignado === code) isValid = true; }
+            }
+            // Si no, buscar en proyectos
+            if(!isValid) {
+                const snapProy = await get(child(dRef(realDB), "proyectos"));
+                if(snapProy.exists()){
+                    const data = snapProy.val();
+                    for(let k in data) { if(data[k].codigoProyecto === code) isValid = true; }
+                }
+            }
+
+            if(isValid) {
+                activeClientValidatedCode = code; 
+                document.getElementById('paymentLockedState').style.display = 'none';
+                document.getElementById('paymentUnlockedState').style.display = 'block';
+                
+                document.getElementById('paymentUnlockedState').innerHTML = `
+                    <div style="margin-bottom:15px;">
+                        <label style="color:var(--azul-marino); font-size:0.75rem; font-weight:700;">🔵 ENLACE PAYPAL</label>
+                        <div style="background:#f4f6f8; padding:12px; border-radius:8px; font-size:0.85rem; font-weight:600; border:1px solid var(--borde);"><a href="${linkPaypalActivo}" target="_blank" style="color:#003087;">${linkPaypalActivo}</a></div>
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label style="color:var(--azul-marino); font-size:0.75rem; font-weight:700;">🟡 DATOS BINANCE PAY</label>
+                        <div style="background:#f4f6f8; padding:12px; border-radius:8px; font-size:0.85rem; font-weight:600; border:1px solid var(--borde);">${idBinanceActivo}</div>
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label style="color:var(--azul-marino); font-size:0.75rem; font-weight:700;">🟢 BANCOS NACIONALES / ZELLE</label>
+                        <div style="background:#f4f6f8; padding:12px; border-radius:8px; font-size:0.85rem; font-weight:600; white-space:pre-wrap; border:1px solid var(--borde);">${otrosBancosActivo}</div>
+                    </div>
+                    <p style="font-size:0.75rem; color:var(--naranja); text-align:center; margin-top:20px;"><strong>¡Atención!</strong> Una vez realizado el pago, recuerda enviar el comprobante a David por WhatsApp para que libere tus archivos sin marca de agua.</p>
+                `;
+            } else {
+                alert("Código no encontrado. Verifica si lo escribiste correctamente (Ej. DV26-XXXX).");
+            }
+        } catch(e) {
+            alert("Error de conexión al verificar el código de seguridad.");
+        } finally {
+            btn.innerText = "🔓 Desbloquear Cuentas de Pago";
+        }
     });
+
+    document.getElementById('btnClosePayment').addEventListener('click', () => {
+        document.getElementById('paymentModal').style.display = 'none';
+    });
+
+
+    // --- BOTÓN CARRUSEL VISTA PREVIA ---
+    document.getElementById('btnCarouselPreview').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('privateGallerySection').style.display = 'none';
+        document.getElementById('codeVerificationBlock').style.display = 'block';
+        document.getElementById('clientProjectCodeInput').value = '';
+        attemptChangeScreen('screenControl');
+        localStorage.setItem('autoOpenPreviewTab', 'true'); // Bandera para abrir pestaña al verificar
+    });
+
 
     function ocultarPaneles() {
         document.getElementById('panelInicial').style.display = 'none';
@@ -662,25 +787,21 @@
         }
     }
 
-    // Logica de Modal de Advertencia
     document.getElementById('btnResumeUpload').addEventListener('click', () => {
         document.getElementById('uploadWarningModal').style.display = 'none';
     });
 
     document.getElementById('btnConfirmCancelUpload').addEventListener('click', () => {
-        // Cancelar todas las tareas activas de firebase
         activeUploadTasks.forEach(task => task.cancel());
-        activeUploadTasks = []; // vaciar array
+        activeUploadTasks = []; 
         window.isUploading = false;
         
-        // Esconder UI de carga
         document.getElementById('uploadWarningModal').style.display = 'none';
         document.getElementById('clientProgressBox').style.display = 'none';
         document.getElementById('adminProgressBox').style.display = 'none';
         document.getElementById('btnClientUploadFiles').disabled = false;
         document.getElementById('btnAdminUploadFiles').disabled = false;
         
-        // Proceder con el cambio de pantalla que el usuario quería
         changeScreen(pendingNavigationScreen);
     });
 
@@ -714,6 +835,7 @@
     }
 
     document.getElementById('btnTabDescargar').addEventListener('click', (e) => alternarPestañasCliente('tabDescargar', e.currentTarget));
+    document.getElementById('btnTabPrevia').addEventListener('click', (e) => alternarPestañasCliente('tabPrevia', e.currentTarget));
     document.getElementById('btnTabSubir').addEventListener('click', (e) => alternarPestañasCliente('tabSubir', e.currentTarget));
 
     // --- MÁQUINA DE ESTADOS IA INTERACTIVA ---
@@ -728,20 +850,20 @@
     document.getElementById('btnNuevoFlow').addEventListener('click', () => { ocultarPaneles(); startIaWizard(); });
     document.getElementById('btnCancelExistente').addEventListener('click', () => { ocultarPaneles(); document.getElementById('panelInicial').style.display = 'flex'; });
 
-    function startIaWizard() {
-        currentStep = 1;
-        orderData = { modalidad: "", itemsSeleccionados: [], totalInversion: 0, planEscogido: "", nombreCliente: "", telefonoCliente: "", codigoUnico: "", esquemaPago: "", metricaEnganche: "" };
+    function startIaWizard(step = 1, customMessage = null) {
+        currentStep = step;
+        if(step === 1) orderData = { modalidad: "", itemsSeleccionados: [], itemsPreseleccionados: [], totalInversion: 0, planEscogido: "", nombreCliente: "", telefonoCliente: "", codigoUnico: "", esquemaPago: "", metricaEnganche: "" };
         document.getElementById('panelIaPasos').style.display = 'flex';
-        renderIaStep();
+        renderIaStep(customMessage);
     }
 
-    function renderIaStep() {
+    function renderIaStep(customMessage = null) {
         const container = document.getElementById('iaStepContent');
         const aiBox = document.getElementById('aiResponse');
         container.innerHTML = "";
 
         if (currentStep === 1) {
-            const txt = "Para darte la solución perfecta, cuéntame: ¿Estás buscando una pieza, diseño o video específico e individual, o necesitas un plan mensual recurrente para tu marca?";
+            const txt = customMessage || "Para darte la solución perfecta, cuéntame: ¿Estás buscando una pieza, diseño o video específico e individual, o necesitas un plan mensual recurrente para tu marca?";
             aiBox.innerText = txt; decir(txt);
 
             container.innerHTML = `
@@ -756,15 +878,17 @@
         }
 
         else if (currentStep === 2) {
-            const txt = "Perfecto. Selecciona los artes, videos o piezas específicas que requieres y calcularé el presupuesto de inmediato.";
+            const txt = customMessage || "Perfecto. Selecciona los artes, videos o piezas específicas que requieres y calcularé el presupuesto de inmediato.";
             aiBox.innerText = txt; decir(txt);
 
             let HTMLMatrix = `<div class="matrix-grid">`;
             for (let cat in servicesMatrix) {
                 for (let service in servicesMatrix[cat]) {
+                    // Preseleccionar si la IA detectó la palabra
+                    let isChecked = (orderData.itemsPreseleccionados && orderData.itemsPreseleccionados.includes(service)) ? 'checked' : '';
                     HTMLMatrix += `
                         <label class="matrix-item">
-                            <input type="checkbox" class="chk-service" data-name="${service}" data-price="${servicesMatrix[cat][service]}">
+                            <input type="checkbox" class="chk-service" data-name="${service}" data-price="${servicesMatrix[cat][service]}" ${isChecked}>
                             <span>${service} ($${servicesMatrix[cat][service]})</span>
                         </label>`;
                 }
@@ -928,7 +1052,6 @@
             linkPaypalActivo = paypalVal;
             idBinanceActivo = binanceVal;
             otrosBancosActivo = otrosVal;
-            document.getElementById('btnPaypalLink').href = paypalVal;
             alert("¡Cuentas financieras de PayPal, Binance y Otros Bancos actualizadas con éxito!");
         } catch(err) { alert("Error al subir configuración financiera."); }
     });
@@ -979,34 +1102,50 @@
         attemptChangeScreen('screenControl');
     });
 
+    // --- VERIFICACIÓN DE CÓDIGO (SEPARA VISTA PREVIA Y FINAL) ---
     document.getElementById('btnVerifyProjectCode').addEventListener('click', async () => {
         const code = document.getElementById('clientProjectCodeInput').value.trim().toUpperCase();
         if(!code) return alert("Por favor introduce tu código único.");
         
-        const gallery = document.getElementById('galleryContent');
-        gallery.innerHTML = '<p style="font-size:0.85rem;">Sincronizando canal protegido...</p>';
+        const galFinal = document.getElementById('galleryContentFinal');
+        const galPrevia = document.getElementById('galleryContentPrevia');
+        
+        galFinal.innerHTML = '<p style="font-size:0.85rem;">Sincronizando entregas...</p>';
+        galPrevia.innerHTML = '<p style="font-size:0.85rem;">Sincronizando vistas previas...</p>';
         
         try {
             const snapshot = await get(child(dRef(realDB), "proyectos"));
-            gallery.innerHTML = ''; let count = 0;
+            galFinal.innerHTML = ''; galPrevia.innerHTML = '';
+            let countFinal = 0; let countPrevia = 0;
+            
             if(snapshot.exists()) {
                 const data = snapshot.val();
                 for(let key in data) {
                     if(data[key].codigoProyecto === code && data[key].subidoPor === "David") {
-                        count++;
-                        gallery.innerHTML += `
+                        const isPrevia = data[key].tipoArchivo === 'previa';
+                        const itemHtml = `
                             <div style="padding:10px; border-bottom:1px solid var(--borde); display:flex; justify-content:space-between; align-items:center;">
                                 <div><strong>${data[key].archivo}</strong><br><small style="color:#64748b;">${data[key].fecha || ''}</small></div>
-                                <a href="${data[key].urlDownload}" target="_blank" style="color:var(--naranja); font-weight:bold; text-decoration:none; font-size:0.85rem;">Descargar 📥</a>
+                                <a href="${data[key].urlDownload}" target="_blank" style="color:var(--naranja); font-weight:bold; text-decoration:none; font-size:0.85rem;">${isPrevia ? 'Ver Borrador 👁️' : 'Descargar 📥'}</a>
                             </div>`;
+                            
+                        if(isPrevia) { galPrevia.innerHTML += itemHtml; countPrevia++; } 
+                        else { galFinal.innerHTML += itemHtml; countFinal++; }
                     }
                 }
             }
-            if(count === 0) gallery.innerHTML = '<p style="font-size:0.8rem; color:#64748b; margin:0;">No hay archivos cargados por David para este código todavía.</p>';
+            if(countFinal === 0) galFinal.innerHTML = '<p style="font-size:0.8rem; color:#64748b; margin:0;">No hay archivos pagados disponibles todavía.</p>';
+            if(countPrevia === 0) galPrevia.innerHTML = '<p style="font-size:0.8rem; color:#64748b; margin:0;">No hay borradores con marca de agua todavía.</p>';
             
             document.getElementById('codeVerificationBlock').style.display = 'none';
             document.getElementById('privateGallerySection').style.display = 'block';
             activeClientValidatedCode = code; decir("Canal privado sincronizado");
+
+            // Si vino desde el botón del carrusel, ábrele la pestaña Previa
+            if(localStorage.getItem('autoOpenPreviewTab') === 'true') {
+                document.getElementById('btnTabPrevia').click();
+                localStorage.removeItem('autoOpenPreviewTab');
+            }
         } catch(err) { alert("Error de conexión con la Base de Datos."); }
     });
 
@@ -1023,7 +1162,7 @@
         if (this.files.length > 0) document.getElementById('clientDropZone').innerText = `${this.files.length} archivo(s) seleccionado(s)`;
     });
 
-    // CARGA DE CLIENTE CON NUEVO PROGRESS Y SOPORTE DE CANCELACIÓN
+    // CARGA DE CLIENTE CON BARRA VISUAL DE MB
     document.getElementById('btnClientUploadFiles').addEventListener('click', async () => {
         const fileInput = document.getElementById('clientFileInput');
         const files = fileInput.files;
@@ -1037,7 +1176,7 @@
         try {
             btn.disabled = true;
             window.isUploading = true;
-            activeUploadTasks = []; // reiniciar tracking
+            activeUploadTasks = []; 
 
             const totalBytes = Array.from(files).reduce((sum, f) => sum + f.size, 0);
             const loadedBytes = new Array(files.length).fill(0);
@@ -1045,14 +1184,14 @@
             const promises = Array.from(files).map((file, idx) => {
                 const storageRef = sRef(storage, `uploads/${activeClientValidatedCode}/cliente_input/${file.name}`);
                 const uploadTask = uploadBytesResumable(storageRef, file);
-                activeUploadTasks.push(uploadTask); // agregarlo para poder cancelarlo si el usuario sale
+                activeUploadTasks.push(uploadTask); 
 
                 return new Promise((resolve, reject) => {
                     uploadTask.on('state_changed', 
                         (snapshot) => {
                             loadedBytes[idx] = snapshot.bytesTransferred;
                             const currentLoaded = loadedBytes.reduce((a, b) => a + b, 0);
-                            actualizarProgresoCircular((currentLoaded / totalBytes) * 100, 'clientProgressTxt');
+                            actualizarProgresoVisual((currentLoaded / totalBytes) * 100, 'clientProgressTxt', 'clientProgressBarFill', currentLoaded, totalBytes);
                         },
                         (err) => {
                             if (err.code === 'storage/canceled') { resolve(); } else { reject(err); }
@@ -1072,7 +1211,6 @@
 
             await Promise.all(promises);
             
-            // Si llego aquí y window.isUploading sigue true, es porque no se canceló artificialmente
             if(window.isUploading) {
                 decir("Tus referencias han sido cargadas");
                 alert("¡Referencias enviadas a David exitosamente!");
@@ -1089,12 +1227,13 @@
         if (this.files.length > 0) document.getElementById('dropZone').innerText = `${this.files.length} archivo(s) listo(s)`;
     });
 
-    // CARGA DE ADMIN CON NUEVO PROGRESS Y SOPORTE DE CANCELACIÓN
+    // CARGA DE ADMIN CON SELECTOR Y BARRA VISUAL DE MB
     document.getElementById('btnAdminUploadFiles').addEventListener('click', async () => {
         const fileInput = document.getElementById('adminFileInput');
         const files = fileInput.files;
         const code = document.getElementById('adminProjectCodeInput').value.trim().toUpperCase();
         const folder = document.getElementById('adminFolderInput').value.trim() || "General";
+        const tipoArchivo = document.getElementById('adminFileType').value;
 
         if(!code || !files || files.length === 0) return alert("Completa código y selecciona archivos.");
 
@@ -1105,7 +1244,7 @@
         try {
             btn.disabled = true;
             window.isUploading = true;
-            activeUploadTasks = []; // reiniciar tracking
+            activeUploadTasks = []; 
 
             const totalBytes = Array.from(files).reduce((sum, f) => sum + f.size, 0);
             const loadedBytes = new Array(files.length).fill(0);
@@ -1113,14 +1252,14 @@
             const promises = Array.from(files).map((file, idx) => {
                 const storageRef = sRef(storage, `uploads/${code}/david_output/${file.name}`);
                 const uploadTask = uploadBytesResumable(storageRef, file);
-                activeUploadTasks.push(uploadTask); // agregarlo para poder cancelarlo si se pide
+                activeUploadTasks.push(uploadTask); 
 
                 return new Promise((resolve, reject) => {
                     uploadTask.on('state_changed', 
                         (snapshot) => {
                             loadedBytes[idx] = snapshot.bytesTransferred;
                             const currentLoaded = loadedBytes.reduce((a, b) => a + b, 0);
-                            actualizarProgresoCircular((currentLoaded / totalBytes) * 100, 'adminProgressTxt');
+                            actualizarProgresoVisual((currentLoaded / totalBytes) * 100, 'adminProgressTxt', 'adminProgressBarFill', currentLoaded, totalBytes);
                         },
                         (err) => {
                             if (err.code === 'storage/canceled') { resolve(); } else { reject(err); }
@@ -1130,7 +1269,8 @@
                             const nodeKey = `David_${code}_${file.name}`.replace(/[\.#\$\/\[\]]/g, "_");
                             await set(dRef(realDB, 'proyectos/' + nodeKey), {
                                 codigoProyecto: code, carpeta: folder, archivo: file.name,
-                                urlDownload: url, fecha: new Date().toISOString().split('T')[0], subidoPor: "David"
+                                urlDownload: url, fecha: new Date().toISOString().split('T')[0], 
+                                subidoPor: "David", tipoArchivo: tipoArchivo
                             });
                             resolve();
                         }
@@ -1142,7 +1282,7 @@
             
             if(window.isUploading) {
                 decir("Tu material ha sido cargado con éxito");
-                alert("¡Entrega indexada!");
+                alert("¡Entrega indexada correctamente!");
                 fileInput.value = '';
                 document.getElementById('dropZone').innerText = 'Seleccionar material terminado';
                 renderizarTablaAdmin();
@@ -1173,10 +1313,12 @@
                     const tr = document.createElement('tr');
                     const isDavid = item.subidoPor === "David";
                     const badge = isDavid ? '<span class="badge" style="background:#d1fae5; color:#065f46;">David 📤</span>' : '<span class="badge" style="background:#fef3c7; color:#92400e;">Cliente 📥</span>';
+                    const badgeType = item.tipoArchivo === 'previa' ? ' <span style="font-size:0.6rem; background:#fff5ef; color:var(--naranja); padding:2px 4px; border-radius:3px;">PREVIA</span>' : '';
+                    
                     tr.innerHTML = `
                         <td style="color:var(--naranja);font-weight:bold;">${item.codigoProyecto || 'N/A'}</td>
                         <td>${badge}</td>
-                        <td><strong>${item.carpeta || 'General'}</strong></td>
+                        <td><strong>${item.carpeta || 'General'}</strong>${badgeType}</td>
                         <td><a href="${item.urlDownload || '#'}" target="_blank" style="color:var(--azul-marino); font-weight:600;">${item.archivo}</a></td>
                         <td>${item.fecha || '-'}</td>`;
                     tbody.appendChild(tr);
@@ -1198,7 +1340,6 @@
                 idBinanceActivo = dataP.binance || "No configurado";
                 otrosBancosActivo = dataP.otrosBancos || "No configurado";
                 
-                document.getElementById('btnPaypalLink').href = linkPaypalActivo;
                 document.getElementById('adminPaypalInput').value = linkPaypalActivo;
                 document.getElementById('adminBinanceInput').value = idBinanceActivo;
                 document.getElementById('adminOtrosBancosInput').value = otrosBancosActivo;
@@ -1267,11 +1408,18 @@
         document.querySelectorAll('#adminTableBody tr').forEach(row => { row.style.display = row.innerText.toLowerCase().includes(value) ? '' : 'none'; });
     });
 
-    function actualizarProgresoCircular(progress, textId) {
+    function actualizarProgresoVisual(progress, textId, fillId, loadedBytes, totalBytes) {
         const text = document.getElementById(textId);
+        const fill = document.getElementById(fillId);
         const roundedPct = Math.round(progress);
+        
+        const mbLoaded = (loadedBytes / (1024 * 1024)).toFixed(2);
+        const mbTotal = (totalBytes / (1024 * 1024)).toFixed(2);
+
+        if(fill) fill.style.width = `${roundedPct}%`;
+
         if (roundedPct < 100) {
-            text.innerText = `Cargando archivos... ${roundedPct}%`;
+            text.innerText = `Subiendo: ${roundedPct}% (${mbLoaded} MB / ${mbTotal} MB)`;
         } else {
             text.innerText = `¡Procesamiento exitoso! 100%`;
         }
