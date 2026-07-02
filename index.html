@@ -9,6 +9,16 @@
   </head>
     
   <body>
+  <html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>davidshernandezs-alt</title>
+    
+
+  </head>
+    
+  <body>
   <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -194,6 +204,19 @@
 </head>
 <body>
 
+
+<!-- MODAL VISTA PREVIA Y DESCARGA -->
+<div class="announcement-modal" id="previewModal" style="z-index: 3000;">
+    <div class="announcement-content" style="max-width: 800px; width: 95%;">
+        <span class="close-modal" id="btnClosePreview">&times;</span>
+        <h2 id="previewTitle" style="font-size:1.2rem; color:var(--azul-marino); margin-top:10px;">Vista Previa</h2>
+        <div id="previewContainer" style="margin: 15px 0; max-height: 60vh; overflow: auto; display:flex; justify-content:center; align-items:center; background:#f8fafc; border-radius:8px; border:1px solid var(--borde); padding:10px;">
+            <!-- content here -->
+        </div>
+        <a id="btnDownloadPreview" href="#" class="btn-main" style="display:inline-block; text-decoration:none; margin-top:10px; width:100%; box-sizing:border-box;" download>📥 Descargar Archivo</a>
+    </div>
+</div>
+
 <!-- MODAL COMUNICADOS -->
 <div class="announcement-modal" id="popupModal">
     <div class="announcement-content">
@@ -203,6 +226,7 @@
         <div class="video-container" id="popupVideoFrame" style="display: none;">
             <iframe id="youtubeIframe" src="" allowfullscreen></iframe>
         </div>
+        <img id="popupImageFrame" src="" style="display: none; width: 100%; border-radius: 10px; margin-top: 15px; object-fit: contain; max-height: 300px;">
     </div>
 </div>
 
@@ -346,7 +370,14 @@
 
     <!-- PANTALLA 2: INTERCAMBIO PRIVADO (CLIENTES) -->
     <div id="screenControl" class="screen">
-        <h1>🔐 Panel de Intercambio Privado</h1>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <h1 style="margin:0;">🔐 Canal Privado</h1>
+            <button id="btnNotifClient" style="background:var(--azul-marino); color:white; padding:8px 12px; border-radius:8px; border:none; font-size:0.8rem; font-weight:bold; cursor:pointer; position:relative; display:none;">
+                🔔 Actualizaciones <span id="badgeNotifClient" style="background:red; color:white; padding:2px 6px; border-radius:50%; font-size:0.7rem; position:absolute; top:-5px; right:-5px; display:none;">0</span>
+            </button>
+        </div>
+
         
         <div class="form-group" id="codeVerificationBlock">
             <label style="color:var(--naranja); font-weight:700;">INGRESA TU CÓDIGO ÚNICO DE PROYECTO</label>
@@ -406,7 +437,14 @@
 
     <!-- PANTALLA 3: ADMIN CON CONTROLADOR DE MATRIZ Y DE CUENTAS DE PAGO -->
     <div id="screenAdmin" class="screen">
-        <h1>⚙️ Panel de Control del Administrador</h1>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <h1 style="margin:0;">⚙️ Panel Admin</h1>
+            <button id="btnNotifAdmin" style="background:var(--naranja); color:white; padding:8px 12px; border-radius:8px; border:none; font-size:0.8rem; font-weight:bold; cursor:pointer; position:relative;">
+                🔔 Notificaciones <span id="badgeNotifAdmin" style="background:red; color:white; padding:2px 6px; border-radius:50%; font-size:0.7rem; position:absolute; top:-5px; right:-5px; display:none;">0</span>
+            </button>
+        </div>
+
         
         <div style="background:#f0fbf6; border:2px solid var(--verde-whatsapp); padding:20px; border-radius:16px; margin-bottom:20px;">
             <h3 style="color:var(--verde-whatsapp); margin-bottom:5px;">💵 Configurar Cuentas de Recaudación</h3>
@@ -488,8 +526,13 @@
             <button class="btn-upload" style="width:auto; padding:8px 20px;" id="btnSaveAdminProfile">Guardar Cambios de Perfil</button>
         </div>
 
+        
         <div style="background:#fffaf7; border:1px solid #ffe4d3; padding:20px; border-radius:12px; margin-bottom:20px;">
             <h3>📢 Configurar Ventana Emergente (Comunicado)</h3>
+            <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" id="adminPopupActive" checked style="width: 20px; height: 20px; cursor:pointer;">
+                <label style="margin:0; font-size:0.9rem; color:var(--naranja);">Activar Comunicado</label>
+            </div>
             <div class="form-group">
                 <label>TÍTULO DEL POP-UP</label>
                 <input type="text" id="adminPopupTitle" placeholder="Ej. ¡Novedades de la semana!">
@@ -502,8 +545,14 @@
                 <label>ENLACE DE VIDEO (YOUTUBE EMBED)</label>
                 <input type="text" id="adminPopupVideo" placeholder="Ej. https://www.youtube.com/embed/XXXXXX">
             </div>
+            <div class="form-group">
+                <label>IMAGEN (URL O CARGAR)</label>
+                <input type="file" id="adminPopupImageInput" accept="image/*">
+                <p style="font-size:0.7rem; color:#64748b; margin-top:4px;">Si subes una imagen, se mostrará en lugar del video (o junto a él).</p>
+            </div>
             <button class="btn-main" style="width:auto; padding:8px 20px;" id="btnSavePopupConfig">Publicar Comunicado</button>
         </div>
+
 
         <h3>Seguimiento Financiero y Monitor de Archivos</h3>
         <div class="form-group">
@@ -533,7 +582,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
     import { getStorage, ref as sRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
-    import { getDatabase, ref as dRef, set, get, child } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+    import { getDatabase, ref as dRef, set, get, child, remove, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDmtI70sEjbB6k3tkgtVuSYHBclDh6tiLE",
@@ -552,6 +601,7 @@
 
     let activeClientValidatedCode = "";
     let fotoBase64 = "";
+    let popupImgBase64 = "";
     
     // Variables locales para las pasarelas
     let linkPaypalActivo = "https://www.paypal.me";
@@ -570,6 +620,43 @@
     };
 
     window.isUploading = false;
+
+    window.eliminarArchivoAdmin = async function(nodeKey) {
+        if(confirm("¿Estás seguro de que deseas eliminar este archivo de la base de datos?")) {
+            try {
+                await remove(dRef(realDB, 'proyectos/' + nodeKey));
+                alert("Archivo eliminado de la base de datos.");
+                renderizarTablaAdmin();
+            } catch(e) {
+                alert("Error al eliminar.");
+            }
+        }
+    };
+
+    window.abrirVistaPrevia = function(url, filename) {
+        document.getElementById('previewTitle').innerText = filename;
+        const container = document.getElementById('previewContainer');
+        
+        const fileExt = filename.split('.').pop().toLowerCase();
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
+            container.innerHTML = `<img src="${url}" style="max-width:100%; max-height:50vh; object-fit:contain;">`;
+        } else if (['mp4', 'webm', 'ogg'].includes(fileExt)) {
+            container.innerHTML = `<video controls src="${url}" style="max-width:100%; max-height:50vh;"></video>`;
+        } else if (['pdf'].includes(fileExt)) {
+            container.innerHTML = `<iframe src="${url}" style="width:100%; height:50vh; border:none;"></iframe>`;
+        } else {
+            container.innerHTML = `<p style="color:#64748b; font-size:0.9rem;">Vista previa no disponible para este tipo de archivo.</p>`;
+        }
+        
+        document.getElementById('btnDownloadPreview').href = url;
+        document.getElementById('previewModal').style.display = 'flex';
+    };
+
+    document.getElementById('btnClosePreview').addEventListener('click', () => {
+        document.getElementById('previewModal').style.display = 'none';
+        document.getElementById('previewContainer').innerHTML = ''; // Stop video if playing
+    });
+
     let activeUploadTasks = []; 
     let pendingNavigationScreen = ''; 
 
@@ -590,12 +677,12 @@
             const vplumin = document.getElementById('avatarVideo');
             utterance.onstart = () => {
                 if(vplumin) {
-                    vplumin.currentTime = 0;
                     vplumin.play().catch(err => console.log("Se requiere interacción para reproducir material multimedia."));
                 }
             };
-            utterance.onend = () => { if(vplumin) vplumin.pause(); };
-            utterance.onerror = () => { if(vplumin) vplumin.pause(); };
+            // Al finalizar, no forzamos un stop para que el video en bucle no se vaya a negro
+            utterance.onend = () => { if(vplumin) { vplumin.pause(); vplumin.currentTime = 0.5; } };
+            utterance.onerror = () => { if(vplumin) { vplumin.pause(); vplumin.currentTime = 0.5; } };
             
             window.speechSynthesis.speak(utterance);
         }
@@ -633,7 +720,7 @@
             document.getElementById('clientProjectCodeInput').value = codigoDetectado;
             document.getElementById('btnAutoRedirectControl').addEventListener('click', () => {
                 document.getElementById('privateGallerySection').style.display = 'none';
-                document.getElementById('codeVerificationBlock').style.display = 'block';
+                document.getElementById('codeVerificationBlock').style.display = 'block'; document.getElementById('btnNotifClient').style.display = 'none';
                 changeScreen('screenControl');
                 setTimeout(() => document.getElementById('btnVerifyProjectCode').click(), 200);
             });
@@ -643,13 +730,12 @@
 
         // 2. Extraer Servicios Específicos
         let detectedServices = [];
-        const matrixKeysFlat = {
-            "flyer": "Flyer", "infografía": "Infografía", "brochure": "Brochure", "pop": "POP", "portada": "Portadas", 
-            "mockup": "Mockup", "logo": "Logo", "manual de marca": "Manual de Marca", "promo": "Promo", "reels": "Reels", 
-            "escenas": "Escenas con I.A", "edición de video": "Edición de Video", "animación": "Animación", "paquete gráfico": "Paquete Gráfico", "coletilla": "Coletilla", "plantillas": "Plantillas RRSS"
-        };
-        for (let key in matrixKeysFlat) {
-            if (query.includes(key)) { detectedServices.push(matrixKeysFlat[key]); }
+        for (let cat in servicesMatrix) {
+            for (let serviceName in servicesMatrix[cat]) {
+                if (query.includes(serviceName.toLowerCase())) {
+                    detectedServices.push(serviceName);
+                }
+            }
         }
 
         // 3. Saludo por hora
@@ -773,7 +859,7 @@
     document.getElementById('btnCarouselPreview').addEventListener('click', (e) => {
         e.preventDefault();
         document.getElementById('privateGallerySection').style.display = 'none';
-        document.getElementById('codeVerificationBlock').style.display = 'block';
+        document.getElementById('codeVerificationBlock').style.display = 'block'; document.getElementById('btnNotifClient').style.display = 'none';
         document.getElementById('clientProjectCodeInput').value = '';
         attemptChangeScreen('screenControl');
         localStorage.setItem('autoOpenPreviewTab', 'true'); 
@@ -803,6 +889,43 @@
         activeUploadTasks.forEach(task => task.cancel());
         activeUploadTasks = []; 
         window.isUploading = false;
+
+    window.eliminarArchivoAdmin = async function(nodeKey) {
+        if(confirm("¿Estás seguro de que deseas eliminar este archivo de la base de datos?")) {
+            try {
+                await remove(dRef(realDB, 'proyectos/' + nodeKey));
+                alert("Archivo eliminado de la base de datos.");
+                renderizarTablaAdmin();
+            } catch(e) {
+                alert("Error al eliminar.");
+            }
+        }
+    };
+
+    window.abrirVistaPrevia = function(url, filename) {
+        document.getElementById('previewTitle').innerText = filename;
+        const container = document.getElementById('previewContainer');
+        
+        const fileExt = filename.split('.').pop().toLowerCase();
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
+            container.innerHTML = `<img src="${url}" style="max-width:100%; max-height:50vh; object-fit:contain;">`;
+        } else if (['mp4', 'webm', 'ogg'].includes(fileExt)) {
+            container.innerHTML = `<video controls src="${url}" style="max-width:100%; max-height:50vh;"></video>`;
+        } else if (['pdf'].includes(fileExt)) {
+            container.innerHTML = `<iframe src="${url}" style="width:100%; height:50vh; border:none;"></iframe>`;
+        } else {
+            container.innerHTML = `<p style="color:#64748b; font-size:0.9rem;">Vista previa no disponible para este tipo de archivo.</p>`;
+        }
+        
+        document.getElementById('btnDownloadPreview').href = url;
+        document.getElementById('previewModal').style.display = 'flex';
+    };
+
+    document.getElementById('btnClosePreview').addEventListener('click', () => {
+        document.getElementById('previewModal').style.display = 'none';
+        document.getElementById('previewContainer').innerHTML = ''; // Stop video if playing
+    });
+
         
         document.getElementById('uploadWarningModal').style.display = 'none';
         document.getElementById('clientProgressBox').style.display = 'none';
@@ -845,6 +968,56 @@
     document.getElementById('btnTabDescargar').addEventListener('click', (e) => alternarPestañasCliente('tabDescargar', e.currentTarget));
     document.getElementById('btnTabPrevia').addEventListener('click', (e) => alternarPestañasCliente('tabPrevia', e.currentTarget));
     document.getElementById('btnTabSubir').addEventListener('click', (e) => alternarPestañasCliente('tabSubir', e.currentTarget));
+
+    
+    // === SISTEMA DE NOTIFICACIONES ===
+    let totalNotifAdmin = 0;
+    let totalNotifClient = 0;
+    let ultimoRemitenteAdmin = "";
+    
+    // Escuchar la base de datos
+    onValue(dRef(realDB, 'proyectos'), (snapshot) => {
+        totalNotifAdmin = 0;
+        totalNotifClient = 0;
+        
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            for (let key in data) {
+                const item = data[key];
+                if (item.subidoPor === "Cliente") {
+                    totalNotifAdmin++;
+                    ultimoRemitenteAdmin = item.codigoProyecto;
+                }
+                
+                if (activeClientValidatedCode && item.codigoProyecto === activeClientValidatedCode && item.subidoPor === "David") {
+                    totalNotifClient++;
+                }
+            }
+        }
+        
+        const badgeA = document.getElementById('badgeNotifAdmin');
+        if (badgeA) {
+            badgeA.innerText = totalNotifAdmin;
+            badgeA.style.display = totalNotifAdmin > 0 ? 'inline-block' : 'none';
+        }
+        
+        const badgeC = document.getElementById('badgeNotifClient');
+        if (badgeC) {
+            badgeC.innerText = totalNotifClient;
+            badgeC.style.display = totalNotifClient > 0 ? 'inline-block' : 'none';
+        }
+    });
+
+    document.getElementById('btnNotifAdmin').addEventListener('click', () => {
+        if (totalNotifAdmin > 0) {
+            const msg = `Atención David. Han cargado material. Hay un total de ${totalNotifAdmin} archivos pendientes de clientes. El último corresponde a ${ultimoRemitenteAdmin}.`;
+            decir(msg);
+            alert(`Archivos subidos por clientes: ${totalNotifAdmin}\nRevisa la tabla inferior para más detalles.`);
+        } else {
+            decir("No tienes entregas pendientes.");
+            alert("No hay archivos nuevos de clientes.");
+        }
+    });
 
     // --- MÁQUINA DE ESTADOS IA INTERACTIVA ---
     document.getElementById('avatarIa').addEventListener('click', () => {
@@ -955,7 +1128,7 @@
                 orderData.planEscogido = "Rango Mensual Gráfico: $150 a $350 (Máx 3 meses)";
                 orderData.totalInversion = 250; 
                 orderData.metricaEnganche = "Cálculo de enganche automático de volumen aplicado";
-                orderData.esquemaPago = `Quincenal de $${(orderData.totalInversion / 2).toFixed(2)} los 15 y último de cada mes`;
+                orderData.esquemaPago = `Plan de $${orderData.totalInversion}/mes: 50% ($${(orderData.totalInversion / 2).toFixed(2)}) el día 15 y 50% a fin de mes`;
                 currentStep = 4; renderIaStep();
             });
 
@@ -975,7 +1148,7 @@
                 orderData.planEscogido = "Paquete Mensual de 60 Videos";
                 orderData.totalInversion = 600;
                 orderData.metricaEnganche = "$10 por video (Ahorro del 60%)";
-                orderData.esquemaPago = `Quincenal de $300 los 15 y último de cada mes`;
+                orderData.esquemaPago = `Plan de $600/mes: 50% ($300) el día 15 y 50% a fin de mes`;
                 currentStep = 4; renderIaStep();
             });
 
@@ -983,7 +1156,7 @@
                 orderData.planEscogido = "Plan Recurrente de Video Estándar";
                 orderData.totalInversion = 200;
                 orderData.metricaEnganche = "Ahorro por volumen mensual optimizado";
-                orderData.esquemaPago = `Quincenal de $100 los 15 y último de cada mes`;
+                orderData.esquemaPago = `Plan de $200/mes: 50% ($100) el día 15 y 50% a fin de mes`;
                 currentStep = 4; renderIaStep();
             });
         }
@@ -1069,11 +1242,33 @@
         let targetData = servicesMatrix[category];
         for (let key in targetData) {
             wrapper.innerHTML += `
-                <div style="background:white; padding:8px; border:1px solid var(--borde); border-radius:8px;">
-                    <label style="font-size:0.68rem; font-weight:bold; color:var(--azul-marino);">${key.toUpperCase()}</label>
-                    <input type="number" class="matrix-input-edit" data-cat="${category}" data-key="${key}" value="${targetData[key]}" style="padding:6px; font-size:0.85rem;">
+                <div class="matrix-row" style="background:white; padding:8px; border:1px solid var(--borde); border-radius:8px; display:flex; flex-direction:column; gap:5px;">
+                    <input type="text" class="matrix-name-edit" data-cat="${category}" data-oldkey="${key}" value="${key}" style="padding:6px; font-size:0.85rem; font-weight:bold; color:var(--azul-marino); border:1px solid #ccc; border-radius:4px;" placeholder="Nombre del servicio">
+                    <div style="display:flex; gap:5px; align-items:center;">
+                        <input type="number" class="matrix-input-edit" data-cat="${category}" value="${targetData[key]}" style="width:100%; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:4px;" placeholder="Precio ($)">
+                        <button type="button" class="btn-delete-service" style="background:#dc2626; color:white; padding:6px 10px; border:none; border-radius:4px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">🗑️</button>
+                    </div>
                 </div>`;
         }
+        
+        wrapper.innerHTML += `
+            <div style="grid-column: 1 / -1; text-align:center; margin-top: 10px;">
+                <button type="button" id="btnAddServiceRow" style="background:var(--verde-whatsapp); color:white; padding:8px 15px; border-radius:8px; border:none; cursor:pointer;">➕ Añadir Nuevo Servicio</button>
+            </div>
+        `;
+        
+        document.getElementById('btnAddServiceRow').addEventListener('click', () => {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = `
+                <div class="matrix-row" style="background:white; padding:8px; border:1px solid var(--borde); border-radius:8px; display:flex; flex-direction:column; gap:5px;">
+                    <input type="text" class="matrix-name-edit" data-cat="${category}" data-oldkey="" value="" style="padding:6px; font-size:0.85rem; font-weight:bold; color:var(--azul-marino); border:1px solid #ccc; border-radius:4px;" placeholder="Nombre del servicio">
+                    <div style="display:flex; gap:5px; align-items:center;">
+                        <input type="number" class="matrix-input-edit" data-cat="${category}" value="0" style="width:100%; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:4px;" placeholder="Precio ($)">
+                        <button type="button" class="btn-delete-service" style="background:#dc2626; color:white; padding:6px 10px; border:none; border-radius:4px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">🗑️</button>
+                    </div>
+                </div>`;
+            wrapper.insertBefore(tempDiv.firstElementChild, document.getElementById('btnAddServiceRow').parentElement);
+        });
     }
 
     document.getElementById('btnMatGráfico').addEventListener('click', (e) => { 
@@ -1090,12 +1285,26 @@
     });
 
     document.getElementById('btnSaveMatrixData').addEventListener('click', async () => {
-        const inputs = document.querySelectorAll('.matrix-input-edit');
-        inputs.forEach(input => {
-            let cat = input.getAttribute('data-cat');
-            let key = input.getAttribute('data-key');
-            let val = parseFloat(input.value) || 0;
-            servicesMatrix[cat][key] = val;
+        const categories = ['diseno', 'video', 'otros'];
+        
+        // Rebuild matrix from current category view (the active tab)
+        const activeCat = document.querySelector('#screenAdmin .tab-btn.active').id.replace('btnMat', '').toLowerCase();
+        let catKey = 'diseno';
+        if(activeCat === 'video') catKey = 'video';
+        if(activeCat === 'otros') catKey = 'otros';
+        
+        // We clear the active category and rebuild it from the inputs
+        servicesMatrix[catKey] = {};
+        
+        const rows = document.querySelectorAll('#editorMatrizContenedor .matrix-row');
+        rows.forEach(row => {
+            const nameInput = row.querySelector('.matrix-name-edit');
+            const priceInput = row.querySelector('.matrix-input-edit');
+            const newName = nameInput.value.trim();
+            const price = parseFloat(priceInput.value) || 0;
+            if (newName) {
+                servicesMatrix[catKey][newName] = price;
+            }
         });
 
         try { await set(dRef(realDB, 'config/matriz'), servicesMatrix); alert("¡Matriz actualizada con éxito!");
@@ -1104,7 +1313,7 @@
 
     document.getElementById('btnGoControl').addEventListener('click', () => {
         document.getElementById('privateGallerySection').style.display = 'none';
-        document.getElementById('codeVerificationBlock').style.display = 'block';
+        document.getElementById('codeVerificationBlock').style.display = 'block'; document.getElementById('btnNotifClient').style.display = 'none';
         document.getElementById('clientProjectCodeInput').value = '';
         attemptChangeScreen('screenControl');
     });
@@ -1133,7 +1342,7 @@
                         const itemHtml = `
                             <div style="padding:10px; border-bottom:1px solid var(--borde); display:flex; justify-content:space-between; align-items:center;">
                                 <div><strong>${data[key].archivo}</strong><br><small style="color:#64748b;">${data[key].fecha || ''}</small></div>
-                                <a href="${data[key].urlDownload}" target="_blank" style="color:var(--naranja); font-weight:bold; text-decoration:none; font-size:0.85rem;">${isPrevia ? 'Ver Borrador 👁️' : 'Descargar 📥'}</a>
+                                <a href="#" onclick="abrirVistaPrevia('${data[key].urlDownload}', '${data[key].archivo}')" style="color:var(--naranja); font-weight:bold; text-decoration:underline; font-size:0.85rem;">${isPrevia ? 'Ver Borrador 👁️' : 'Descargar 📥'}</a>
                             </div>`;
                             
                         if(isPrevia) { galPrevia.innerHTML += itemHtml; countPrevia++; } 
@@ -1141,11 +1350,16 @@
                     }
                 }
             }
+            
             if(countFinal === 0) galFinal.innerHTML = '<p style="font-size:0.8rem; color:#64748b; margin:0;">No hay archivos pagados disponibles todavía.</p>';
             if(countPrevia === 0) galPrevia.innerHTML = '<p style="font-size:0.8rem; color:#64748b; margin:0;">No hay borradores con marca de agua todavía.</p>';
             
+            document.getElementById('btnTabDescargar').innerText = `📥 Mis Entregas (${countFinal})`;
+            document.getElementById('btnTabPrevia').innerText = `👁️ Vistas Previas (${countPrevia})`;
+
+            
             document.getElementById('codeVerificationBlock').style.display = 'none';
-            document.getElementById('privateGallerySection').style.display = 'block';
+            document.getElementById('privateGallerySection').style.display = 'block'; document.getElementById('btnNotifClient').style.display = 'inline-block';
             activeClientValidatedCode = code; decir("Canal privado sincronizado");
 
             if(localStorage.getItem('autoOpenPreviewTab') === 'true') {
@@ -1155,10 +1369,22 @@
         } catch(err) { alert("Error de conexión con la Base de Datos."); }
     });
 
+    
+    document.getElementById('btnNotifClient').addEventListener('click', () => {
+        if (totalNotifClient > 0) {
+            const msg = `Hola. David ha cargado material. Hay ${totalNotifClient} archivos listos en tus entregas.`;
+            decir(msg);
+            alert(`David ha subido ${totalNotifClient} archivos para tu proyecto.`);
+        } else {
+            decir("Aún no tienes material nuevo cargado por David.");
+            alert("No hay archivos nuevos de David todavía.");
+        }
+    });
+
     document.getElementById('btnLockChannel').addEventListener('click', () => {
         activeClientValidatedCode = "";
         document.getElementById('privateGallerySection').style.display = 'none';
-        document.getElementById('codeVerificationBlock').style.display = 'block';
+        document.getElementById('codeVerificationBlock').style.display = 'block'; document.getElementById('btnNotifClient').style.display = 'none';
     });
 
     document.getElementById('btnGenerateRandomCode').addEventListener('click', () => { document.getElementById('adminProjectCodeInput').value = "DV26-" + Math.floor(1000 + Math.random() * 9000); });
@@ -1233,7 +1459,44 @@
             console.error("Detalle del error de Storage/Cliente:", e);
             alert(`Falla de subida: ${e.message || 'Error crítico en la carga.'}. Abre la consola (F12) para más detalles.`); 
         }
-        finally { btn.disabled = false; window.isUploading = false; activeUploadTasks = []; }
+        finally { btn.disabled = false; window.isUploading = false;
+
+    window.eliminarArchivoAdmin = async function(nodeKey) {
+        if(confirm("¿Estás seguro de que deseas eliminar este archivo de la base de datos?")) {
+            try {
+                await remove(dRef(realDB, 'proyectos/' + nodeKey));
+                alert("Archivo eliminado de la base de datos.");
+                renderizarTablaAdmin();
+            } catch(e) {
+                alert("Error al eliminar.");
+            }
+        }
+    };
+
+    window.abrirVistaPrevia = function(url, filename) {
+        document.getElementById('previewTitle').innerText = filename;
+        const container = document.getElementById('previewContainer');
+        
+        const fileExt = filename.split('.').pop().toLowerCase();
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
+            container.innerHTML = `<img src="${url}" style="max-width:100%; max-height:50vh; object-fit:contain;">`;
+        } else if (['mp4', 'webm', 'ogg'].includes(fileExt)) {
+            container.innerHTML = `<video controls src="${url}" style="max-width:100%; max-height:50vh;"></video>`;
+        } else if (['pdf'].includes(fileExt)) {
+            container.innerHTML = `<iframe src="${url}" style="width:100%; height:50vh; border:none;"></iframe>`;
+        } else {
+            container.innerHTML = `<p style="color:#64748b; font-size:0.9rem;">Vista previa no disponible para este tipo de archivo.</p>`;
+        }
+        
+        document.getElementById('btnDownloadPreview').href = url;
+        document.getElementById('previewModal').style.display = 'flex';
+    };
+
+    document.getElementById('btnClosePreview').addEventListener('click', () => {
+        document.getElementById('previewModal').style.display = 'none';
+        document.getElementById('previewContainer').innerHTML = ''; // Stop video if playing
+    });
+ activeUploadTasks = []; }
     });
 
     document.getElementById('dropZone').addEventListener('click', () => document.getElementById('adminFileInput').click());
@@ -1311,7 +1574,44 @@
             console.error("Detalle del error de Storage/Admin:", e);
             alert(`Falla de subida: ${e.message || 'Error crítico en la carga.'}. Abre la consola (F12) para más detalles.`);
         }
-        finally { btn.disabled = false; window.isUploading = false; activeUploadTasks = []; }
+        finally { btn.disabled = false; window.isUploading = false;
+
+    window.eliminarArchivoAdmin = async function(nodeKey) {
+        if(confirm("¿Estás seguro de que deseas eliminar este archivo de la base de datos?")) {
+            try {
+                await remove(dRef(realDB, 'proyectos/' + nodeKey));
+                alert("Archivo eliminado de la base de datos.");
+                renderizarTablaAdmin();
+            } catch(e) {
+                alert("Error al eliminar.");
+            }
+        }
+    };
+
+    window.abrirVistaPrevia = function(url, filename) {
+        document.getElementById('previewTitle').innerText = filename;
+        const container = document.getElementById('previewContainer');
+        
+        const fileExt = filename.split('.').pop().toLowerCase();
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
+            container.innerHTML = `<img src="${url}" style="max-width:100%; max-height:50vh; object-fit:contain;">`;
+        } else if (['mp4', 'webm', 'ogg'].includes(fileExt)) {
+            container.innerHTML = `<video controls src="${url}" style="max-width:100%; max-height:50vh;"></video>`;
+        } else if (['pdf'].includes(fileExt)) {
+            container.innerHTML = `<iframe src="${url}" style="width:100%; height:50vh; border:none;"></iframe>`;
+        } else {
+            container.innerHTML = `<p style="color:#64748b; font-size:0.9rem;">Vista previa no disponible para este tipo de archivo.</p>`;
+        }
+        
+        document.getElementById('btnDownloadPreview').href = url;
+        document.getElementById('previewModal').style.display = 'flex';
+    };
+
+    document.getElementById('btnClosePreview').addEventListener('click', () => {
+        document.getElementById('previewModal').style.display = 'none';
+        document.getElementById('previewContainer').innerHTML = ''; // Stop video if playing
+    });
+ activeUploadTasks = []; }
     });
 
     document.getElementById('adminPhotoInput').addEventListener('change', function(e) {
@@ -1341,8 +1641,13 @@
                         <td style="color:var(--naranja);font-weight:bold;">${item.codigoProyecto || 'N/A'}</td>
                         <td>${badge}</td>
                         <td><strong>${item.carpeta || 'General'}</strong>${badgeType}</td>
-                        <td><a href="${item.urlDownload || '#'}" target="_blank" style="color:var(--azul-marino); font-weight:600;">${item.archivo}</a></td>
-                        <td>${item.fecha || '-'}</td>`;
+                        <td>
+                            <a href="#" onclick="abrirVistaPrevia('${item.urlDownload}', '${item.archivo}')" style="color:var(--azul-marino); font-weight:600; text-decoration:underline;">${item.archivo}</a>
+                        </td>
+                        <td>
+                            ${item.fecha || '-'}
+                            <button onclick="eliminarArchivoAdmin('${key}')" style="background:#dc2626; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-left:8px; font-size:0.75rem;">🗑️</button>
+                        </td>`;
                     tbody.appendChild(tr);
                 }
             }
@@ -1376,14 +1681,26 @@
             const snapshotPopup = await get(child(dbRef, "config/comunicado"));
             if (snapshotPopup.exists()) {
                 const popData = snapshotPopup.val();
-                if (popData.activo && popData.texto) {
+                
+                // Set admin fields if we are in admin mode
+                const checkActive = document.getElementById('adminPopupActive');
+                if(checkActive) checkActive.checked = popData.activo !== false;
+                if(popData.titulo) document.getElementById('adminPopupTitle').value = popData.titulo;
+                if(popData.texto) document.getElementById('adminPopupText').value = popData.texto;
+                if(popData.videoUrl) document.getElementById('adminPopupVideo').value = popData.videoUrl;
+
+                if (popData.activo !== false && (popData.texto || popData.imagenUrl || popData.videoUrl)) {
                     document.getElementById('popupTitle').innerText = popData.titulo || "Comunicado";
-                    document.getElementById('popupText').innerText = popData.texto;
+                    document.getElementById('popupText').innerText = popData.texto || "";
                     if (popData.videoUrl) {
                         let embedUrl = popData.videoUrl;
                         if(embedUrl.includes("watch?v=")) embedUrl = embedUrl.replace("watch?v=", "embed/");
                         document.getElementById('youtubeIframe').src = embedUrl;
                         document.getElementById('popupVideoFrame').style.display = 'block';
+                    }
+                    if (popData.imagenUrl) {
+                        document.getElementById('popupImageFrame').src = popData.imagenUrl;
+                        document.getElementById('popupImageFrame').style.display = 'block';
                     }
                     document.getElementById('popupModal').style.display = 'flex';
                 }
@@ -1416,13 +1733,26 @@
         await set(dRef(realDB, 'config/perfil'), payload); alert("¡Perfil guardado!");
     });
     
+    
+    document.getElementById('adminPopupImageInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = function(evt) { popupImgBase64 = evt.target.result; };
+            reader.readAsDataURL(file);
+        }
+    });
+
     document.getElementById('btnSavePopupConfig').addEventListener('click', async () => {
-        await set(dRef(realDB, 'config/comunicado'), {
+        const payload = {
             titulo: document.getElementById('adminPopupTitle').value.trim(),
             texto: document.getElementById('adminPopupText').value.trim(),
             videoUrl: document.getElementById('adminPopupVideo').value.trim(),
-            activo: true
-        }); alert("¡Comunicado guardado!");
+            activo: document.getElementById('adminPopupActive').checked
+        };
+        if (popupImgBase64) payload.imagenUrl = popupImgBase64;
+        await set(dRef(realDB, 'config/comunicado'), payload); 
+        alert("¡Comunicado guardado!");
     });
     
     document.getElementById('tableFilterInput').addEventListener('keyup', () => {
