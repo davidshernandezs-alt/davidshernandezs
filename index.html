@@ -1,8 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>davidshernandezs-alt</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Asistente Virtual Inteligente - David</title>
+    
     <style>
         :root {
             --azul-marino: #0a2540;
@@ -594,7 +607,7 @@
         if (vplumin) vplumin.pause();
     }
 
-    // --- NLP Y LÓGICA CONVERSACIONAL (MEJORADA) ---
+    // --- NLP Y LÓGICA CONVERSACIONAL ---
     function procesarMensajeIa() {
         const inputField = document.getElementById('clientIaTextInput');
         const query = inputField.value.trim().toLowerCase();
@@ -628,7 +641,7 @@
             return;
         }
 
-        // 2. Extraer Servicios Específicos (NLP Básico)
+        // 2. Extraer Servicios Específicos
         let detectedServices = [];
         const matrixKeysFlat = {
             "flyer": "Flyer", "infografía": "Infografía", "brochure": "Brochure", "pop": "POP", "portada": "Portadas", 
@@ -688,14 +701,13 @@
         if(e.key === 'Enter') { e.preventDefault(); document.getElementById('btnAdminLoginSubmit').click(); }
     });
 
-    // --- MODAL DE BÓVEDA DE PAGOS (DESBLOQUEO SEGURO) ---
+    // --- MODAL DE BÓVEDA DE PAGOS ---
     document.querySelectorAll('.payment-btn-trigger').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             document.getElementById('paymentModal').style.display = 'flex';
             document.getElementById('paymentLockedState').style.display = 'block';
             document.getElementById('paymentUnlockedState').style.display = 'none';
-            // Auto-rellenar si ya ingresó su código antes
             document.getElementById('paymentSecurityCode').value = activeClientValidatedCode || ""; 
         });
     });
@@ -709,14 +721,11 @@
 
         try {
             let isValid = false;
-            
-            // Buscar primero en clientes_nuevos
             const snapNuevos = await get(child(dRef(realDB), "clientes_nuevos"));
             if(snapNuevos.exists()){
                 const data = snapNuevos.val();
                 for(let k in data) { if(data[k].codigoAsignado === code) isValid = true; }
             }
-            // Si no, buscar en proyectos
             if(!isValid) {
                 const snapProy = await get(child(dRef(realDB), "proyectos"));
                 if(snapProy.exists()){
@@ -767,7 +776,7 @@
         document.getElementById('codeVerificationBlock').style.display = 'block';
         document.getElementById('clientProjectCodeInput').value = '';
         attemptChangeScreen('screenControl');
-        localStorage.setItem('autoOpenPreviewTab', 'true'); // Bandera para abrir pestaña al verificar
+        localStorage.setItem('autoOpenPreviewTab', 'true'); 
     });
 
 
@@ -777,7 +786,6 @@
         document.getElementById('panelIaPasos').style.display = 'none';
     }
 
-    // --- NUEVA LÓGICA DE NAVEGACIÓN SEGURA Y CANCELACIÓN ---
     function attemptChangeScreen(screenId) {
         if (window.isUploading) {
             pendingNavigationScreen = screenId;
@@ -884,7 +892,6 @@
             let HTMLMatrix = `<div class="matrix-grid">`;
             for (let cat in servicesMatrix) {
                 for (let service in servicesMatrix[cat]) {
-                    // Preseleccionar si la IA detectó la palabra
                     let isChecked = (orderData.itemsPreseleccionados && orderData.itemsPreseleccionados.includes(service)) ? 'checked' : '';
                     HTMLMatrix += `
                         <label class="matrix-item">
@@ -1141,7 +1148,6 @@
             document.getElementById('privateGallerySection').style.display = 'block';
             activeClientValidatedCode = code; decir("Canal privado sincronizado");
 
-            // Si vino desde el botón del carrusel, ábrele la pestaña Previa
             if(localStorage.getItem('autoOpenPreviewTab') === 'true') {
                 document.getElementById('btnTabPrevia').click();
                 localStorage.removeItem('autoOpenPreviewTab');
@@ -1162,7 +1168,7 @@
         if (this.files.length > 0) document.getElementById('clientDropZone').innerText = `${this.files.length} archivo(s) seleccionado(s)`;
     });
 
-    // CARGA DE CLIENTE CON BARRA VISUAL DE MB
+    // CARGA DE CLIENTE
     document.getElementById('btnClientUploadFiles').addEventListener('click', async () => {
         const fileInput = document.getElementById('clientFileInput');
         const files = fileInput.files;
@@ -1197,13 +1203,18 @@
                             if (err.code === 'storage/canceled') { resolve(); } else { reject(err); }
                         },
                         async () => {
-                            const url = await getDownloadURL(uploadTask.snapshot.ref);
-                            const nodeKey = `Client_${activeClientValidatedCode}_${file.name}`.replace(/[\.#\$\/\[\]]/g, "_");
-                            await set(dRef(realDB, 'proyectos/' + nodeKey), {
-                                codigoProyecto: activeClientValidatedCode, carpeta: "Aportes Cliente", archivo: file.name,
-                                urlDownload: url, fecha: new Date().toISOString().split('T')[0], subidoPor: "Cliente"
-                            });
-                            resolve();
+                            try {
+                                const url = await getDownloadURL(uploadTask.snapshot.ref);
+                                const nodeKey = `Client_${activeClientValidatedCode}_${file.name}`.replace(/[\.#\$\/\[\]]/g, "_");
+                                await set(dRef(realDB, 'proyectos/' + nodeKey), {
+                                    codigoProyecto: activeClientValidatedCode, carpeta: "Aportes Cliente", archivo: file.name,
+                                    urlDownload: url, fecha: new Date().toISOString().split('T')[0], subidoPor: "Cliente"
+                                });
+                                resolve();
+                            } catch (internalErr) {
+                                console.error("Fallo escribiendo en la Base de Datos:", internalErr);
+                                reject(internalErr);
+                            }
                         }
                     );
                 });
@@ -1218,7 +1229,10 @@
                 document.getElementById('clientDropZone').innerText = 'Toca para seleccionar tus referencias';
                 setTimeout(() => progressBox.style.display = 'none', 3000);
             }
-        } catch(e) { alert("Error crítico en la carga masiva."); }
+        } catch(e) { 
+            console.error("Detalle del error de Storage/Cliente:", e);
+            alert(`Falla de subida: ${e.message || 'Error crítico en la carga.'}. Abre la consola (F12) para más detalles.`); 
+        }
         finally { btn.disabled = false; window.isUploading = false; activeUploadTasks = []; }
     });
 
@@ -1227,7 +1241,7 @@
         if (this.files.length > 0) document.getElementById('dropZone').innerText = `${this.files.length} archivo(s) listo(s)`;
     });
 
-    // CARGA DE ADMIN CON SELECTOR Y BARRA VISUAL DE MB
+    // CARGA DE ADMIN
     document.getElementById('btnAdminUploadFiles').addEventListener('click', async () => {
         const fileInput = document.getElementById('adminFileInput');
         const files = fileInput.files;
@@ -1265,14 +1279,19 @@
                             if (err.code === 'storage/canceled') { resolve(); } else { reject(err); }
                         },
                         async () => {
-                            const url = await getDownloadURL(uploadTask.snapshot.ref);
-                            const nodeKey = `David_${code}_${file.name}`.replace(/[\.#\$\/\[\]]/g, "_");
-                            await set(dRef(realDB, 'proyectos/' + nodeKey), {
-                                codigoProyecto: code, carpeta: folder, archivo: file.name,
-                                urlDownload: url, fecha: new Date().toISOString().split('T')[0], 
-                                subidoPor: "David", tipoArchivo: tipoArchivo
-                            });
-                            resolve();
+                            try {
+                                const url = await getDownloadURL(uploadTask.snapshot.ref);
+                                const nodeKey = `David_${code}_${file.name}`.replace(/[\.#\$\/\[\]]/g, "_");
+                                await set(dRef(realDB, 'proyectos/' + nodeKey), {
+                                    codigoProyecto: code, carpeta: folder, archivo: file.name,
+                                    urlDownload: url, fecha: new Date().toISOString().split('T')[0], 
+                                    subidoPor: "David", tipoArchivo: tipoArchivo
+                                });
+                                resolve();
+                            } catch (internalErr) {
+                                console.error("Fallo escribiendo en la Base de Datos:", internalErr);
+                                reject(internalErr);
+                            }
                         }
                     );
                 });
@@ -1288,7 +1307,10 @@
                 renderizarTablaAdmin();
                 setTimeout(() => progressBox.style.display = 'none', 3000);
             }
-        } catch(e) { alert("Fallo de subida de material administrativo."); }
+        } catch(e) { 
+            console.error("Detalle del error de Storage/Admin:", e);
+            alert(`Falla de subida: ${e.message || 'Error crítico en la carga.'}. Abre la consola (F12) para más detalles.`);
+        }
         finally { btn.disabled = false; window.isUploading = false; activeUploadTasks = []; }
     });
 
@@ -1426,4 +1448,8 @@
     }
 </script>
 </body>
+</html>
+    
+  </body>
+  
 </html>
