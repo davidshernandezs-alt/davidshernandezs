@@ -1,25 +1,4 @@
 <!DOCTYPE html>
-<html lang="en">
-
-  <head>
-    <meta charset="UTF-8">
-    <title>davidshernandezs-alt</title>
-    
-
-  </head>
-    
-  <body>
-  <html lang="en">
-
-  <head>
-    <meta charset="UTF-8">
-    <title>davidshernandezs-alt</title>
-    
-
-  </head>
-    
-  <body>
-  <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -199,25 +178,37 @@
         .matrix-item { display: flex; align-items: center; gap: 8px; padding: 8px; background: white; border: 1px solid var(--borde); border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
         .matrix-item input { cursor: pointer; }
 
+        /* Sistema interactivo de estrellas */
+        .survey-group { margin-bottom: 20px; text-align: center; }
+        .survey-group label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--azul-marino); margin-bottom: 8px; }
+        .star-rating { 
+            display: flex; flex-direction: row-reverse; justify-content: center; gap: 5px; 
+            font-size: 2rem; color: #e2e8f0; cursor: pointer; 
+        }
+        .star-rating span { transition: color 0.2s; }
+        .star-rating span:hover, 
+        .star-rating span:hover ~ span, 
+        .star-rating span.active, 
+        .star-rating span.active ~ span { 
+            color: var(--oro); 
+        }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 
-<!-- MODAL VISTA PREVIA Y DESCARGA -->
 <div class="announcement-modal" id="previewModal" style="z-index: 3000;">
     <div class="announcement-content" style="max-width: 800px; width: 95%;">
         <span class="close-modal" id="btnClosePreview">&times;</span>
         <h2 id="previewTitle" style="font-size:1.2rem; color:var(--azul-marino); margin-top:10px;">Vista Previa</h2>
         <div id="previewContainer" style="margin: 15px 0; max-height: 60vh; overflow: auto; display:flex; justify-content:center; align-items:center; background:#f8fafc; border-radius:8px; border:1px solid var(--borde); padding:10px;">
-            <!-- content here -->
-        </div>
+            </div>
         <a id="btnDownloadPreview" href="#" class="btn-main" style="display:inline-block; text-decoration:none; margin-top:10px; width:100%; box-sizing:border-box;" download>📥 Descargar Archivo</a>
     </div>
 </div>
 
-<!-- MODAL COMUNICADOS -->
 <div class="announcement-modal" id="popupModal">
     <div class="announcement-content">
         <span class="close-modal" id="btnClosePopup">&times;</span>
@@ -230,7 +221,6 @@
     </div>
 </div>
 
-<!-- MODAL DE ADVERTENCIA DE CARGA -->
 <div class="announcement-modal" id="uploadWarningModal" style="z-index: 2000;">
     <div class="announcement-content" style="border: 2px solid var(--naranja);">
         <h2 style="font-size:1.2rem; color:var(--naranja); margin-top:10px;">⚠️ Carga en Progreso</h2>
@@ -242,7 +232,6 @@
     </div>
 </div>
 
-<!-- MODAL DE BÓVEDA DE PAGOS SEGUROS -->
 <div class="announcement-modal" id="paymentModal" style="z-index: 1500;">
     <div class="announcement-content">
         <span class="close-modal" id="btnClosePayment">&times;</span>
@@ -259,9 +248,39 @@
     </div>
 </div>
 
+<div class="announcement-modal" id="surveyModal" style="z-index: 4000;">
+    <div class="announcement-content">
+        <span class="close-modal" id="btnCloseSurvey">&times;</span>
+        <h2 style="font-size:1.2rem; color:var(--azul-marino); margin-top:10px;">⭐ Califica tu Proyecto</h2>
+        <p style="font-size:0.8rem; color:#475569; margin-bottom:20px;">Tu opinión nos ayuda a figurar en el Top 5 de proyectos.</p>
+        
+        <div class="survey-group">
+            <label>1. Experiencia con la plataforma</label>
+            <div class="star-rating" data-category="plataforma">
+                <span data-value="5">★</span><span data-value="4">★</span><span data-value="3">★</span><span data-value="2">★</span><span data-value="1">★</span>
+            </div>
+        </div>
+        
+        <div class="survey-group">
+            <label>2. Calidad del trabajo entregado</label>
+            <div class="star-rating" data-category="trabajo">
+                <span data-value="5">★</span><span data-value="4">★</span><span data-value="3">★</span><span data-value="2">★</span><span data-value="1">★</span>
+            </div>
+        </div>
+
+        <div class="survey-group">
+            <label>3. Atención recibida</label>
+            <div class="star-rating" data-category="atencion">
+                <span data-value="5">★</span><span data-value="4">★</span><span data-value="3">★</span><span data-value="2">★</span><span data-value="1">★</span>
+            </div>
+        </div>
+        
+        <button class="btn-main" id="btnSubmitSurvey" style="width:100%;">Enviar Evaluación</button>
+    </div>
+</div>
+
 <div class="container">
     
-    <!-- PANTALLA 1: HOME -->
     <div id="screenMain" class="screen active">
         <h1>Asistente Inteligente</h1>
         
@@ -292,6 +311,8 @@
                     <textarea id="clientIaTextInput" rows="2" placeholder="Escribe tu consulta (ej. hola, necesito un logo, un flyer, edición de video)..."></textarea>
                     <button class="btn-upload" style="padding:8px; font-size:0.8rem; background:var(--azul-marino);" id="btnSendClientIaText">Enviar a la IA</button>
                 </div>
+
+                <button class="btn-main" style="width:100%; margin-top:15px; font-size:0.95rem; box-sizing:border-box;" id="btnGoControl">🔐 Gestión de Archivos (Clientes)</button>
             </div>
 
             <div class="top-projects-area">
@@ -304,11 +325,11 @@
                     <div class="project-item"><span>Edición de Reels</span> <span class="stars">★ 4.8</span></div>
                 </div>
 
-                <div style="background: #f8fafc; border: 1px solid var(--borde); border-radius: 16px; padding: 15px; margin-top: 15px; text-align: center;">
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--azul-marino); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; border-bottom: 1px solid var(--borde); padding-bottom: 5px;">
-                        💳 Métodos de Pago Rápidos
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                <details style="background: #f8fafc; border: 1px solid var(--borde); border-radius: 16px; margin-top: 15px; cursor: pointer; overflow: hidden; transition: all 0.3s ease;">
+                    <summary style="padding: 15px; font-size: 0.75rem; font-weight: 700; color: var(--azul-marino); text-transform: uppercase; letter-spacing: 0.5px; text-align: center; list-style: none; outline: none;">
+                        💳 Métodos de Pago Rápidos ▾
+                    </summary>
+                    <div style="padding: 0 15px 15px 15px; display: flex; flex-direction: column; gap: 8px; border-top: 1px dashed var(--borde); margin-top: 5px; padding-top: 15px;">
                         <button class="payment-btn-trigger" style="background: #003087; color: white; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; border:none; cursor:pointer;">
                             🔵 Pagar con PayPal
                         </button>
@@ -319,13 +340,10 @@
                             🟢 Otros Bancos (Pago Móvil / Zelle)
                         </button>
                     </div>
-                </div>
+                </details>
             </div>
         </div>
 
-        <div style="width:100%; display:flex; justify-content:center; margin: 15px 0;">
-            <button class="btn-main" style="width:100%; max-width:320px; font-size:0.95rem;" id="btnGoControl">🔐 Gestión de Archivos (Clientes)</button>
-        </div>
 
         <div class="interactive-panel" id="panelInicial" style="display: none;">
             <button class="btn-option" id="btnExistenteFlow">💼 Ya soy cliente / Intercambio de Archivos</button>
@@ -368,7 +386,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA 2: INTERCAMBIO PRIVADO (CLIENTES) -->
     <div id="screenControl" class="screen">
         
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
@@ -399,6 +416,7 @@
                     <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--azul-marino);">Entregas Listas (Sin Marca de Agua)</h4>
                     <p style="font-size:0.75rem; color:#475569; margin-bottom:10px;">Aquí encontrarás tus proyectos listos para descargar una vez confirmado el pago.</p>
                     <div id="galleryContentFinal"></div>
+                    <button class="btn-main" style="width: 100%; margin-top: 15px; background: var(--oro); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);" onclick="document.getElementById('surveyModal').style.display='flex'">⭐ Calificar Proyecto Finalizado</button>
                 </div>
             </div>
 
@@ -435,7 +453,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA 3: ADMIN CON CONTROLADOR DE MATRIZ Y DE CUENTAS DE PAGO -->
     <div id="screenAdmin" class="screen">
         
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
@@ -889,43 +906,6 @@
         activeUploadTasks.forEach(task => task.cancel());
         activeUploadTasks = []; 
         window.isUploading = false;
-
-    window.eliminarArchivoAdmin = async function(nodeKey) {
-        if(confirm("¿Estás seguro de que deseas eliminar este archivo de la base de datos?")) {
-            try {
-                await remove(dRef(realDB, 'proyectos/' + nodeKey));
-                alert("Archivo eliminado de la base de datos.");
-                renderizarTablaAdmin();
-            } catch(e) {
-                alert("Error al eliminar.");
-            }
-        }
-    };
-
-    window.abrirVistaPrevia = function(url, filename) {
-        document.getElementById('previewTitle').innerText = filename;
-        const container = document.getElementById('previewContainer');
-        
-        const fileExt = filename.split('.').pop().toLowerCase();
-        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
-            container.innerHTML = `<img src="${url}" style="max-width:100%; max-height:50vh; object-fit:contain;">`;
-        } else if (['mp4', 'webm', 'ogg'].includes(fileExt)) {
-            container.innerHTML = `<video controls src="${url}" style="max-width:100%; max-height:50vh;"></video>`;
-        } else if (['pdf'].includes(fileExt)) {
-            container.innerHTML = `<iframe src="${url}" style="width:100%; height:50vh; border:none;"></iframe>`;
-        } else {
-            container.innerHTML = `<p style="color:#64748b; font-size:0.9rem;">Vista previa no disponible para este tipo de archivo.</p>`;
-        }
-        
-        document.getElementById('btnDownloadPreview').href = url;
-        document.getElementById('previewModal').style.display = 'flex';
-    };
-
-    document.getElementById('btnClosePreview').addEventListener('click', () => {
-        document.getElementById('previewModal').style.display = 'none';
-        document.getElementById('previewContainer').innerHTML = ''; // Stop video if playing
-    });
-
         
         document.getElementById('uploadWarningModal').style.display = 'none';
         document.getElementById('clientProgressBox').style.display = 'none';
@@ -1027,9 +1007,17 @@
         document.getElementById('aiResponse').innerText = txt; decir(txt);
     });
 
+    // ACTIVACIÓN CORREGIDA DE LOS BOTONES "YA SOY CLIENTE"
     document.getElementById('btnExistenteFlow').addEventListener('click', () => { ocultarPaneles(); document.getElementById('panelExistente').style.display = 'flex'; });
     document.getElementById('btnNuevoFlow').addEventListener('click', () => { ocultarPaneles(); startIaWizard(); });
     document.getElementById('btnCancelExistente').addEventListener('click', () => { ocultarPaneles(); document.getElementById('panelInicial').style.display = 'flex'; });
+    
+    document.querySelectorAll('#btnCheckStatus1, #btnCheckStatus2').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('btnGoControl').click(); 
+            setTimeout(() => alert("Por favor ingresa tu Código Único de proyecto para verificar el estatus y descargar tus archivos."), 300);
+        });
+    });
 
     function startIaWizard(step = 1, customMessage = null) {
         currentStep = step;
@@ -1459,44 +1447,11 @@
             console.error("Detalle del error de Storage/Cliente:", e);
             alert(`Falla de subida: ${e.message || 'Error crítico en la carga.'}. Abre la consola (F12) para más detalles.`); 
         }
-        finally { btn.disabled = false; window.isUploading = false;
-
-    window.eliminarArchivoAdmin = async function(nodeKey) {
-        if(confirm("¿Estás seguro de que deseas eliminar este archivo de la base de datos?")) {
-            try {
-                await remove(dRef(realDB, 'proyectos/' + nodeKey));
-                alert("Archivo eliminado de la base de datos.");
-                renderizarTablaAdmin();
-            } catch(e) {
-                alert("Error al eliminar.");
-            }
+        finally { 
+            btn.disabled = false; 
+            window.isUploading = false;
+            activeUploadTasks = []; 
         }
-    };
-
-    window.abrirVistaPrevia = function(url, filename) {
-        document.getElementById('previewTitle').innerText = filename;
-        const container = document.getElementById('previewContainer');
-        
-        const fileExt = filename.split('.').pop().toLowerCase();
-        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
-            container.innerHTML = `<img src="${url}" style="max-width:100%; max-height:50vh; object-fit:contain;">`;
-        } else if (['mp4', 'webm', 'ogg'].includes(fileExt)) {
-            container.innerHTML = `<video controls src="${url}" style="max-width:100%; max-height:50vh;"></video>`;
-        } else if (['pdf'].includes(fileExt)) {
-            container.innerHTML = `<iframe src="${url}" style="width:100%; height:50vh; border:none;"></iframe>`;
-        } else {
-            container.innerHTML = `<p style="color:#64748b; font-size:0.9rem;">Vista previa no disponible para este tipo de archivo.</p>`;
-        }
-        
-        document.getElementById('btnDownloadPreview').href = url;
-        document.getElementById('previewModal').style.display = 'flex';
-    };
-
-    document.getElementById('btnClosePreview').addEventListener('click', () => {
-        document.getElementById('previewModal').style.display = 'none';
-        document.getElementById('previewContainer').innerHTML = ''; // Stop video if playing
-    });
- activeUploadTasks = []; }
     });
 
     document.getElementById('dropZone').addEventListener('click', () => document.getElementById('adminFileInput').click());
@@ -1574,44 +1529,11 @@
             console.error("Detalle del error de Storage/Admin:", e);
             alert(`Falla de subida: ${e.message || 'Error crítico en la carga.'}. Abre la consola (F12) para más detalles.`);
         }
-        finally { btn.disabled = false; window.isUploading = false;
-
-    window.eliminarArchivoAdmin = async function(nodeKey) {
-        if(confirm("¿Estás seguro de que deseas eliminar este archivo de la base de datos?")) {
-            try {
-                await remove(dRef(realDB, 'proyectos/' + nodeKey));
-                alert("Archivo eliminado de la base de datos.");
-                renderizarTablaAdmin();
-            } catch(e) {
-                alert("Error al eliminar.");
-            }
+        finally { 
+            btn.disabled = false; 
+            window.isUploading = false;
+            activeUploadTasks = []; 
         }
-    };
-
-    window.abrirVistaPrevia = function(url, filename) {
-        document.getElementById('previewTitle').innerText = filename;
-        const container = document.getElementById('previewContainer');
-        
-        const fileExt = filename.split('.').pop().toLowerCase();
-        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
-            container.innerHTML = `<img src="${url}" style="max-width:100%; max-height:50vh; object-fit:contain;">`;
-        } else if (['mp4', 'webm', 'ogg'].includes(fileExt)) {
-            container.innerHTML = `<video controls src="${url}" style="max-width:100%; max-height:50vh;"></video>`;
-        } else if (['pdf'].includes(fileExt)) {
-            container.innerHTML = `<iframe src="${url}" style="width:100%; height:50vh; border:none;"></iframe>`;
-        } else {
-            container.innerHTML = `<p style="color:#64748b; font-size:0.9rem;">Vista previa no disponible para este tipo de archivo.</p>`;
-        }
-        
-        document.getElementById('btnDownloadPreview').href = url;
-        document.getElementById('previewModal').style.display = 'flex';
-    };
-
-    document.getElementById('btnClosePreview').addEventListener('click', () => {
-        document.getElementById('previewModal').style.display = 'none';
-        document.getElementById('previewContainer').innerHTML = ''; // Stop video if playing
-    });
- activeUploadTasks = []; }
     });
 
     document.getElementById('adminPhotoInput').addEventListener('change', function(e) {
@@ -1776,10 +1698,53 @@
             text.innerText = `¡Procesamiento exitoso! 100%`;
         }
     }
+
+    // --- LÓGICA DE ENCUESTA DE 5 ESTRELLAS ---
+    let surveyScores = { plataforma: 0, trabajo: 0, atencion: 0 };
+
+    document.querySelectorAll('.star-rating span').forEach(star => {
+        star.addEventListener('click', function() {
+            const parent = this.parentNode;
+            const category = parent.getAttribute('data-category');
+            const value = parseInt(this.getAttribute('data-value'));
+            
+            // Limpiar activas anteriores
+            parent.querySelectorAll('span').forEach(s => s.classList.remove('active'));
+            // Marcar la actual como activa
+            this.classList.add('active');
+            
+            surveyScores[category] = value;
+        });
+    });
+
+    document.getElementById('btnCloseSurvey').addEventListener('click', () => {
+        document.getElementById('surveyModal').style.display = 'none';
+    });
+
+    document.getElementById('btnSubmitSurvey').addEventListener('click', async () => {
+        if(!surveyScores.plataforma || !surveyScores.trabajo || !surveyScores.atencion) {
+            return alert("Por favor, califica las 3 categorías con estrellas antes de enviar.");
+        }
+        
+        // Calcula el promedio general
+        const promedio = ((surveyScores.plataforma + surveyScores.trabajo + surveyScores.atencion) / 3).toFixed(1);
+        
+        try {
+            // Guardado opcional en Firebase (si deseas recolectar los datos para usarlos en la plataforma)
+            await set(dRef(realDB, `encuestas_satisfaccion/${activeClientValidatedCode || 'anonimo_' + Date.now()}`), {
+                promedioFinal: promedio, 
+                detalles: surveyScores, 
+                fecha: new Date().toISOString().split('T')[0]
+            });
+            
+            alert(`¡Gracias por tu evaluación de ${promedio} estrellas! Tu calificación nos ayuda a seguir mejorando.`);
+            document.getElementById('surveyModal').style.display = 'none';
+            
+        } catch (e) {
+            alert("Hubo un error de conexión al enviar la encuesta.");
+        }
+    });
+
 </script>
 </body>
-</html>
-    
-  </body>
-  
 </html>
