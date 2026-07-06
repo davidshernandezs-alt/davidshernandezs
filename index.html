@@ -193,6 +193,10 @@
             color: var(--oro); 
         }
 
+        /* Ajustes para Grupos Desplegables en Admin */
+        details.project-group-details summary::-webkit-details-marker { display: none; }
+        details.project-group-details[open] summary { border-bottom-color: transparent; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -590,22 +594,11 @@
 
         <h3>Seguimiento Financiero y Monitor de Archivos</h3>
         <div class="form-group">
-            <input type="text" id="tableFilterInput" placeholder="🔍 Filtrar por proyecto, archivo o código único...">
+            <input type="text" id="tableFilterInput" placeholder="🔍 Filtrar por código de proyecto o nombre del cliente...">
         </div>
-        <div class="admin-table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Código</th>
-                        <th>Origen</th>
-                        <th>Cliente / Tipo</th>
-                        <th>Archivo</th>
-                        <th>Fecha</th>
-                    </tr>
-                </thead>
-                <tbody id="adminTableBody"></tbody>
-            </table>
-        </div>
+        
+        <div class="admin-table-container" id="adminGroupedFilesContainer" style="border:none; background:transparent;">
+            </div>
         
         <div class="nav-actions">
             <button class="btn-gallery" style="background:transparent; border:1px solid var(--borde); width:100%; max-width:250px;" id="btnBackFromAdmin">← Volver al Inicio</button>
@@ -658,7 +651,7 @@
     let activeUploadTasks = []; 
     let pendingNavigationScreen = ''; 
     
-    // VARIABLES GLOBALES PARA ALMACENAR LOS ARCHIVOS SELECCIONADOS (ARCHIVOS O CARPETAS)
+    // VARIABLES GLOBALES PARA ALMACENAR LOS ARCHIVOS SELECCIONADOS
     let clientSelectedFiles = null;
     let adminSelectedFiles = null;
 
@@ -744,7 +737,6 @@
         ocultarPaneles();
         document.getElementById('panelIaPasos').style.display = 'flex';
 
-        // 1. Detección de Código Único de Seguridad
         const codeRegex = /(dv26-\d{4})/i;
         if (codeRegex.test(query)) {
             const codigoDetectado = query.match(codeRegex)[0].toUpperCase();
@@ -766,7 +758,6 @@
             return;
         }
 
-        // 2. Extraer Servicios Específicos
         let detectedServices = [];
         for (let cat in servicesMatrix) {
             for (let serviceName in servicesMatrix[cat]) {
@@ -776,14 +767,12 @@
             }
         }
 
-        // 3. Saludo por hora
         const horaActual = new Date().getHours();
         let saludoPorHora = "buenos días";
         if(horaActual >= 12 && horaActual < 19) saludoPorHora = "buenas tardes";
         else if(horaActual >= 19) saludoPorHora = "buenas noches";
         const esSaludo = query.match(/\b(hola|buenas|saludos|buenos d[íi]as|buenas tardes|buenas noches)\b/i);
 
-        // 4. Lógica de Respuesta Mapeada
         if (detectedServices.length > 0) {
             let msg = esSaludo ? `¡Hola, ${saludoPorHora}! ` : "";
             msg += `He detectado que necesitas: ${detectedServices.join(", ")}. He marcado estos servicios por ti en nuestro cotizador.`;
@@ -893,7 +882,6 @@
     });
 
 
-    // --- BOTÓN CARRUSEL VISTA PREVIA ---
     document.getElementById('btnCarouselPreview').addEventListener('click', (e) => {
         e.preventDefault();
         document.getElementById('privateGallerySection').style.display = 'none';
@@ -1291,10 +1279,8 @@
         e.target.classList.add('active'); renderAdminMatrixEditor('otros'); 
     });
 
+    // CORRECCIÓN: GUARDADO SANEADO DE MATRIZ
     document.getElementById('btnSaveMatrixData').addEventListener('click', async () => {
-        const categories = ['diseno', 'video', 'otros'];
-        
-        // Rebuild matrix from current category view
         const activeCat = document.querySelector('#screenAdmin .tab-btn.active').id.replace('btnMat', '').toLowerCase();
         let catKey = 'diseno';
         if(activeCat === 'video') catKey = 'video';
@@ -1306,15 +1292,21 @@
         rows.forEach(row => {
             const nameInput = row.querySelector('.matrix-name-edit');
             const priceInput = row.querySelector('.matrix-input-edit');
-            const newName = nameInput.value.trim();
+            // Saneamiento clave: eliminar caracteres prohibidos por Firebase
+            const newName = nameInput.value.trim().replace(/[\.#\$\/\[\]]/g, "");
             const price = parseFloat(priceInput.value) || 0;
             if (newName) {
                 servicesMatrix[catKey][newName] = price;
             }
         });
 
-        try { await set(dRef(realDB, 'config/matriz'), servicesMatrix); alert("¡Matriz actualizada con éxito!");
-        } catch(e) { alert("Error de red al guardar la matriz."); }
+        try { 
+            await set(dRef(realDB, 'config/matriz'), servicesMatrix); 
+            alert("¡Matriz actualizada con éxito!");
+        } catch(e) { 
+            console.error(e);
+            alert(`Error al guardar la matriz: Verifica que no haya caracteres extraños.`); 
+        }
     });
 
     document.getElementById('btnGoControl').addEventListener('click', () => {
@@ -1626,35 +1618,94 @@
         }
     });
 
+    // CORRECCIÓN: RENDERIZADO AGRUPADO TIPO ACORDEÓN PARA SEGUIMIENTO FINANCIERO
     async function renderizarTablaAdmin() {
-        const tbody = document.getElementById('adminTableBody');
+        const container = document.getElementById('adminGroupedFilesContainer');
         try {
             const snapshot = await get(child(dRef(realDB), "proyectos"));
-            tbody.innerHTML = '';
+            container.innerHTML = '';
+            
             if(snapshot.exists()) {
                 const data = snapshot.val();
+                
+                // Agrupamos la data por código de proyecto
+                const groupedData = {};
                 for (const key in data) {
                     const item = data[key];
-                    const tr = document.createElement('tr');
-                    const isDavid = item.subidoPor === "David";
-                    const badge = isDavid ? '<span class="badge" style="background:#d1fae5; color:#065f46;">David 📤</span>' : '<span class="badge" style="background:#fef3c7; color:#92400e;">Cliente 📥</span>';
-                    const badgeType = item.tipoArchivo === 'previa' ? ' <span style="font-size:0.6rem; background:#fff5ef; color:var(--naranja); padding:2px 4px; border-radius:3px;">PREVIA</span>' : '';
-                    
-                    tr.innerHTML = `
-                        <td style="color:var(--naranja);font-weight:bold;">${item.codigoProyecto || 'N/A'}</td>
-                        <td>${badge}</td>
-                        <td><strong>${item.carpeta || 'General'}</strong>${badgeType}</td>
-                        <td>
-                            <a href="#" onclick="abrirVistaPrevia('${item.urlDownload}', '${item.archivo}')" style="color:var(--azul-marino); font-weight:600; text-decoration:underline;">${item.archivo}</a>
-                        </td>
-                        <td>
-                            ${item.fecha || '-'}
-                            <button onclick="eliminarArchivoAdmin('${key}')" style="background:#dc2626; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-left:8px; font-size:0.75rem;">🗑️</button>
-                        </td>`;
-                    tbody.appendChild(tr);
+                    item.dbKey = key; // Guardamos la clave para poder eliminar
+                    const groupKey = item.codigoProyecto || 'Sin Código';
+
+                    if (!groupedData[groupKey]) {
+                        groupedData[groupKey] = [];
+                    }
+                    groupedData[groupKey].push(item);
                 }
+                
+                // Renderizamos los grupos en detalles desplegables
+                for (const groupKey in groupedData) {
+                    const items = groupedData[groupKey];
+                    const clientName = items[0].carpeta || 'General'; // Tomamos el nombre del primer registro
+                    
+                    const details = document.createElement('details');
+                    details.className = 'project-group-details';
+                    details.style = "background: #fff; border: 1px solid var(--borde); border-radius: 8px; margin-bottom: 10px; overflow: hidden; transition: all 0.3s ease;";
+                    
+                    const summary = document.createElement('summary');
+                    summary.style = "padding: 12px 15px; background: #f1f5f9; font-weight: 700; color: var(--azul-marino); cursor: pointer; list-style: none; outline: none; border-bottom: 1px solid transparent; display:flex; justify-content: space-between; align-items: center;";
+                    summary.innerHTML = `
+                        <span style="display:flex; align-items:center; gap:8px;">
+                            📁 <span class="group-filter-text">${groupKey} - ${clientName}</span>
+                        </span>
+                        <span style="font-size:0.75rem; background:var(--naranja); color:white; padding:3px 8px; border-radius:12px;">${items.length} Archivos ▾</span>
+                    `;
+                    
+                    const tableDiv = document.createElement('div');
+                    tableDiv.style = "padding: 10px; overflow-x: auto; background:#fafafa; border-top:1px solid var(--borde);";
+                    
+                    let tableHtml = `
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 8px; border-bottom: 1px solid var(--borde);">Origen</th>
+                                    <th style="padding: 8px; border-bottom: 1px solid var(--borde);">Archivo</th>
+                                    <th style="padding: 8px; border-bottom: 1px solid var(--borde);">Fecha</th>
+                                    <th style="padding: 8px; border-bottom: 1px solid var(--borde);">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    items.forEach(item => {
+                        const isDavid = item.subidoPor === "David";
+                        const badge = isDavid ? '<span class="badge" style="background:#d1fae5; color:#065f46;">David 📤</span>' : '<span class="badge" style="background:#fef3c7; color:#92400e;">Cliente 📥</span>';
+                        const badgeType = item.tipoArchivo === 'previa' ? ' <span style="font-size:0.6rem; background:#fff5ef; color:var(--naranja); padding:2px 4px; border-radius:3px;">PREVIA</span>' : '';
+                        
+                        tableHtml += `
+                            <tr style="border-bottom: 1px dashed var(--borde);">
+                                <td style="padding: 8px;">${badge}${badgeType}</td>
+                                <td style="padding: 8px;"><a href="#" onclick="abrirVistaPrevia('${item.urlDownload}', '${item.archivo}')" style="color:var(--azul-marino); font-weight:600; text-decoration:underline;">${item.archivo}</a></td>
+                                <td style="padding: 8px; color:#64748b;">${item.fecha || '-'}</td>
+                                <td style="padding: 8px;">
+                                    <button onclick="eliminarArchivoAdmin('${item.dbKey}')" style="background:#dc2626; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem;">🗑️ Eliminar</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHtml += `</tbody></table>`;
+                    tableDiv.innerHTML = tableHtml;
+                    
+                    details.appendChild(summary);
+                    details.appendChild(tableDiv);
+                    container.appendChild(details);
+                }
+            } else {
+                container.innerHTML = '<p style="font-size:0.85rem; color:#64748b;">No hay archivos en la base de datos.</p>';
             }
-        } catch(e) { tbody.innerHTML = '<tr><td colspan="5">Error de sincronización.</td></tr>'; }
+        } catch(e) { 
+            container.innerHTML = '<p style="color:red; font-size:0.85rem;">Error de sincronización.</p>'; 
+            console.error(e);
+        }
     }
 
     async function cargarConfiguracionesIniciales() {
@@ -1756,9 +1807,20 @@
         alert("¡Comunicado guardado!");
     });
     
+    // CORRECCIÓN: FILTRO ADAPTADO AL NUEVO SISTEMA DE ACORDEONES
     document.getElementById('tableFilterInput').addEventListener('keyup', () => {
         const value = document.getElementById('tableFilterInput').value.toLowerCase();
-        document.querySelectorAll('#adminTableBody tr').forEach(row => { row.style.display = row.innerText.toLowerCase().includes(value) ? '' : 'none'; });
+        document.querySelectorAll('.project-group-details').forEach(details => {
+            const filterTextNode = details.querySelector('.group-filter-text');
+            if (filterTextNode) {
+                const text = filterTextNode.innerText.toLowerCase();
+                if (text.includes(value)) {
+                    details.style.display = '';
+                } else {
+                    details.style.display = 'none';
+                }
+            }
+        });
     });
 
     function actualizarProgresoVisual(progress, textId, fillId, loadedBytes, totalBytes) {
