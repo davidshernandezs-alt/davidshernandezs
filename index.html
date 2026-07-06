@@ -163,7 +163,7 @@
         .form-group { margin-bottom: 15px; width: 100%; text-align: left; }
         label { display: block; font-size: 0.72rem; font-weight: 700; margin-bottom: 6px; color: #64748b; letter-spacing: 0.5px; }
         select, input[type="text"], input[type="password"], textarea { width: 100%; padding: 10px; border: 1px solid var(--borde); border-radius: 8px; box-sizing: border-box; font-size: 0.9rem; color: var(--azul-marino); }
-        .drop-zone { border: 2px dashed var(--naranja); padding: 25px; border-radius: 12px; text-align: center; cursor: pointer; margin-bottom: 15px; font-size: 0.85rem; color: #64748b; background-color: #fffaf7; }
+        .drop-zone { border: 2px dashed var(--naranja); padding: 25px; border-radius: 12px; text-align: center; cursor: default; margin-bottom: 15px; font-size: 0.85rem; color: #64748b; background-color: #fffaf7; }
         .nav-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 15px; width: 100%; }
 
         button { padding: 11px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
@@ -198,13 +198,12 @@
 </head>
 <body>
 
-
 <div class="announcement-modal" id="previewModal" style="z-index: 3000;">
     <div class="announcement-content" style="max-width: 800px; width: 95%;">
         <span class="close-modal" id="btnClosePreview">&times;</span>
         <h2 id="previewTitle" style="font-size:1.2rem; color:var(--azul-marino); margin-top:10px;">Vista Previa</h2>
         <div id="previewContainer" style="margin: 15px 0; max-height: 60vh; overflow: auto; display:flex; justify-content:center; align-items:center; background:#f8fafc; border-radius:8px; border:1px solid var(--borde); padding:10px;">
-            </div>
+        </div>
         <a id="btnDownloadPreview" href="#" class="btn-main" style="display:inline-block; text-decoration:none; margin-top:10px; width:100%; box-sizing:border-box;" download>📥 Descargar Archivo</a>
     </div>
 </div>
@@ -244,7 +243,7 @@
         </div>
 
         <div id="paymentUnlockedState" style="display:none; text-align:left;">
-            </div>
+        </div>
     </div>
 </div>
 
@@ -430,9 +429,18 @@
 
             <div id="tabSubir" class="tab-panel">
                 <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px dashed #94a3b8;">
-                    <h4 style="margin:0 0 5px 0; font-size:0.9rem; color:var(--azul-marino);">Subir Referencias a David</h4>
-                    <div class="drop-zone" id="clientDropZone">Toca para seleccionar tus referencias</div>
+                    <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--azul-marino);">Subir Referencias a David</h4>
+                    
+                    <div class="drop-zone" style="padding:15px; cursor:default; margin-bottom:15px;">
+                        <div id="clientDropZoneText" style="margin-bottom:12px; font-weight:bold; color:var(--azul-marino);">Toca para seleccionar tus referencias</div>
+                        <div style="display:flex; gap:10px; justify-content:center;">
+                            <button type="button" class="btn-gallery" id="btnClientSelectFiles" style="padding:8px 15px; font-size:0.8rem; border:1px solid var(--naranja);">📄 Archivos sueltos</button>
+                            <button type="button" class="btn-gallery" id="btnClientSelectFolder" style="padding:8px 15px; font-size:0.8rem; border:1px solid var(--naranja);">📁 Subir Carpeta</button>
+                        </div>
+                    </div>
+                    
                     <input type="file" id="clientFileInput" hidden multiple>
+                    <input type="file" id="clientFolderInput" hidden webkitdirectory directory allowdirs>
                     
                     <div class="simple-progress-container" id="clientProgressBox">
                         <div class="fitness-status-txt" id="clientProgressTxt">Preparando carga... 0%</div>
@@ -508,7 +516,7 @@
 
             <div class="form-group">
                 <label>NOMBRE DEL CLIENTE / PROYECTO</label>
-                <input type="text" id="adminFolderInput" placeholder="Ej. Globovisión, Nailuj, Evento Carrera">
+                <input type="text" id="adminFolderInputLabel" placeholder="Ej. Globovisión, Nailuj, Evento Carrera">
             </div>
             <div class="form-group">
                 <label>CÓDIGO ÚNICO DEL PROYECTO DESTINO</label>
@@ -517,8 +525,17 @@
                     <button class="btn-gallery" type="button" style="padding:0 15px; font-size:0.8rem;" id="btnGenerateRandomCode">Generar</button>
                 </div>
             </div>
-            <div class="drop-zone" id="dropZone">Seleccionar material...</div>
+            
+            <div class="drop-zone" style="padding:15px; cursor:default; margin-bottom:15px;">
+                <div id="adminDropZoneText" style="margin-bottom:12px; font-weight:bold; color:var(--azul-marino);">Seleccionar material finalizado</div>
+                <div style="display:flex; gap:10px; justify-content:center;">
+                    <button type="button" class="btn-gallery" id="btnAdminSelectFiles" style="padding:8px 15px; font-size:0.8rem; border:1px solid var(--naranja);">📄 Archivos sueltos</button>
+                    <button type="button" class="btn-gallery" id="btnAdminSelectFolder" style="padding:8px 15px; font-size:0.8rem; border:1px solid var(--naranja);">📁 Subir Carpeta</button>
+                </div>
+            </div>
+            
             <input type="file" id="adminFileInput" hidden multiple>
+            <input type="file" id="adminFolderInput" hidden webkitdirectory directory allowdirs>
             
             <div class="simple-progress-container" id="adminProgressBox">
                 <div class="fitness-status-txt" id="adminProgressTxt">Preparando carga... 0%</div>
@@ -594,6 +611,7 @@
             <button class="btn-gallery" style="background:transparent; border:1px solid var(--borde); width:100%; max-width:250px;" id="btnBackFromAdmin">← Volver al Inicio</button>
         </div>
     </div>
+
 </div>
 
 <script type="module">
@@ -637,6 +655,12 @@
     };
 
     window.isUploading = false;
+    let activeUploadTasks = []; 
+    let pendingNavigationScreen = ''; 
+    
+    // VARIABLES GLOBALES PARA ALMACENAR LOS ARCHIVOS SELECCIONADOS (ARCHIVOS O CARPETAS)
+    let clientSelectedFiles = null;
+    let adminSelectedFiles = null;
 
     window.eliminarArchivoAdmin = async function(nodeKey) {
         if(confirm("¿Estás seguro de que deseas eliminar este archivo de la base de datos?")) {
@@ -671,11 +695,9 @@
 
     document.getElementById('btnClosePreview').addEventListener('click', () => {
         document.getElementById('previewModal').style.display = 'none';
-        document.getElementById('previewContainer').innerHTML = ''; // Stop video if playing
+        document.getElementById('previewContainer').innerHTML = ''; 
     });
 
-    let activeUploadTasks = []; 
-    let pendingNavigationScreen = ''; 
 
     window.addEventListener('beforeunload', (e) => {
         if (window.isUploading) {
@@ -697,7 +719,6 @@
                     vplumin.play().catch(err => console.log("Se requiere interacción para reproducir material multimedia."));
                 }
             };
-            // Al finalizar, no forzamos un stop para que el video en bucle no se vaya a negro
             utterance.onend = () => { if(vplumin) { vplumin.pause(); vplumin.currentTime = 0.5; } };
             utterance.onerror = () => { if(vplumin) { vplumin.pause(); vplumin.currentTime = 0.5; } };
             
@@ -955,7 +976,6 @@
     let totalNotifClient = 0;
     let ultimoRemitenteAdmin = "";
     
-    // Escuchar la base de datos
     onValue(dRef(realDB, 'proyectos'), (snapshot) => {
         totalNotifAdmin = 0;
         totalNotifClient = 0;
@@ -1007,7 +1027,6 @@
         document.getElementById('aiResponse').innerText = txt; decir(txt);
     });
 
-    // ACTIVACIÓN CORREGIDA DE LOS BOTONES "YA SOY CLIENTE"
     document.getElementById('btnExistenteFlow').addEventListener('click', () => { ocultarPaneles(); document.getElementById('panelExistente').style.display = 'flex'; });
     document.getElementById('btnNuevoFlow').addEventListener('click', () => { ocultarPaneles(); startIaWizard(); });
     document.getElementById('btnCancelExistente').addEventListener('click', () => { ocultarPaneles(); document.getElementById('panelInicial').style.display = 'flex'; });
@@ -1275,13 +1294,12 @@
     document.getElementById('btnSaveMatrixData').addEventListener('click', async () => {
         const categories = ['diseno', 'video', 'otros'];
         
-        // Rebuild matrix from current category view (the active tab)
+        // Rebuild matrix from current category view
         const activeCat = document.querySelector('#screenAdmin .tab-btn.active').id.replace('btnMat', '').toLowerCase();
         let catKey = 'diseno';
         if(activeCat === 'video') catKey = 'video';
         if(activeCat === 'otros') catKey = 'otros';
         
-        // We clear the active category and rebuild it from the inputs
         servicesMatrix[catKey] = {};
         
         const rows = document.querySelectorAll('#editorMatrizContenedor .matrix-row');
@@ -1306,7 +1324,7 @@
         attemptChangeScreen('screenControl');
     });
 
-    // --- VERIFICACIÓN DE CÓDIGO (SEPARA VISTA PREVIA Y FINAL) ---
+    // --- VERIFICACIÓN DE CÓDIGO ---
     document.getElementById('btnVerifyProjectCode').addEventListener('click', async () => {
         const code = document.getElementById('clientProjectCodeInput').value.trim().toUpperCase();
         if(!code) return alert("Por favor introduce tu código único.");
@@ -1345,7 +1363,6 @@
             document.getElementById('btnTabDescargar').innerText = `📥 Mis Entregas (${countFinal})`;
             document.getElementById('btnTabPrevia').innerText = `👁️ Vistas Previas (${countPrevia})`;
 
-            
             document.getElementById('codeVerificationBlock').style.display = 'none';
             document.getElementById('privateGallerySection').style.display = 'block'; document.getElementById('btnNotifClient').style.display = 'inline-block';
             activeClientValidatedCode = code; decir("Canal privado sincronizado");
@@ -1357,7 +1374,6 @@
         } catch(err) { alert("Error de conexión con la Base de Datos."); }
     });
 
-    
     document.getElementById('btnNotifClient').addEventListener('click', () => {
         if (totalNotifClient > 0) {
             const msg = `Hola. David ha cargado material. Hay ${totalNotifClient} archivos listos en tus entregas.`;
@@ -1377,21 +1393,55 @@
 
     document.getElementById('btnGenerateRandomCode').addEventListener('click', () => { document.getElementById('adminProjectCodeInput').value = "DV26-" + Math.floor(1000 + Math.random() * 9000); });
 
-    document.getElementById('clientDropZone').addEventListener('click', () => document.getElementById('clientFileInput').click());
-    document.getElementById('clientFileInput').addEventListener('change', function() {
-        if (this.files.length > 0) document.getElementById('clientDropZone').innerText = `${this.files.length} archivo(s) seleccionado(s)`;
-    });
 
-    // CARGA DE CLIENTE
+    // =======================================================
+    // LÓGICA DE SELECCIÓN Y CARGA PARA CLIENTES
+    // =======================================================
+    document.getElementById('btnClientSelectFiles').addEventListener('click', () => document.getElementById('clientFileInput').click());
+    document.getElementById('btnClientSelectFolder').addEventListener('click', () => document.getElementById('clientFolderInput').click());
+
+    function handleClientSelection(e) {
+        clientSelectedFiles = e.target.files;
+        if(clientSelectedFiles && clientSelectedFiles.length > 0) {
+            document.getElementById('clientDropZoneText').innerText = `${clientSelectedFiles.length} elemento(s) seleccionado(s) listos para subir.`;
+        }
+    }
+    document.getElementById('clientFileInput').addEventListener('change', handleClientSelection);
+    document.getElementById('clientFolderInput').addEventListener('change', handleClientSelection);
+
     document.getElementById('btnClientUploadFiles').addEventListener('click', async () => {
-        const fileInput = document.getElementById('clientFileInput');
-        const files = fileInput.files;
+        const files = clientSelectedFiles;
         if (!activeClientValidatedCode) return alert('Acción rechazada: Valida primero tu código.');
-        if (!files || files.length === 0) return alert('Por favor selecciona referencias válidas.');
+        if (!files || files.length === 0) return alert('Por favor selecciona archivos o carpetas tocando los botones de arriba.');
 
         const progressBox = document.getElementById('clientProgressBox');
         progressBox.style.display = 'block';
+        
+        const viejaSugerencia = document.getElementById('sugerenciasDemora');
+        if(viejaSugerencia) viejaSugerencia.remove();
+
         const btn = document.getElementById('btnClientUploadFiles');
+
+        const tiempoLimite = 15000; 
+        const timeoutSugerencia = setTimeout(() => {
+            if (window.isUploading) {
+                const sugerenciaDiv = document.createElement('div');
+                sugerenciaDiv.id = 'sugerenciasDemora';
+                sugerenciaDiv.style = 'margin-top: 15px; padding: 15px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; text-align: left; font-size: 0.82rem; color: #92400e; animation: fadeIn 0.3s ease-in-out;';
+                sugerenciaDiv.innerHTML = `
+                    <strong style="display:block; margin-bottom:8px; color:#b45309;">⏳ ¿Está tardando demasiado la carga? Prueba esto:</strong>
+                    <ol style="margin: 0; padding-left: 18px; line-height: 1.5;">
+                        <li><strong>La prueba de fuego:</strong> Intente subir un solo archivo en lugar de todos juntos.</li>
+                        <li>Intente realizar la carga desde una <strong>ventana de incógnito</strong> o usando <strong>otro navegador</strong>.</li>
+                        <li><strong>La alternativa móvil:</strong> Intente subir el archivo desde su teléfono celular usando <strong>datos móviles</strong>.</li>
+                    </ol>
+                `;
+                progressBox.parentNode.appendChild(sugerenciaDiv);
+                if (typeof decir === "function") {
+                    decir("La carga está tomando tiempo. He dejado unas sugerencias en la pantalla para ayudarte.");
+                }
+            }
+        }, tiempoLimite);
 
         try {
             btn.disabled = true;
@@ -1402,7 +1452,8 @@
             const loadedBytes = new Array(files.length).fill(0);
 
             const promises = Array.from(files).map((file, idx) => {
-                const storageRef = sRef(storage, `uploads/${activeClientValidatedCode}/cliente_input/${file.name}`);
+                const pathDestino = file.webkitRelativePath ? file.webkitRelativePath : file.name;
+                const storageRef = sRef(storage, `uploads/${activeClientValidatedCode}/cliente_input/${pathDestino}`);
                 const uploadTask = uploadBytesResumable(storageRef, file);
                 activeUploadTasks.push(uploadTask); 
 
@@ -1419,14 +1470,17 @@
                         async () => {
                             try {
                                 const url = await getDownloadURL(uploadTask.snapshot.ref);
-                                const nodeKey = `Client_${activeClientValidatedCode}_${file.name}`.replace(/[\.#\$\/\[\]]/g, "_");
+                                const nodeKey = `Client_${activeClientValidatedCode}_${file.name}_${idx}`.replace(/[\.#\$\/\[\]]/g, "_");
                                 await set(dRef(realDB, 'proyectos/' + nodeKey), {
-                                    codigoProyecto: activeClientValidatedCode, carpeta: "Aportes Cliente", archivo: file.name,
-                                    urlDownload: url, fecha: new Date().toISOString().split('T')[0], subidoPor: "Cliente"
+                                    codigoProyecto: activeClientValidatedCode, 
+                                    carpeta: file.webkitRelativePath ? file.webkitRelativePath.split('/')[0] : "Aportes Cliente", 
+                                    archivo: file.name,
+                                    urlDownload: url, 
+                                    fecha: new Date().toISOString().split('T')[0], 
+                                    subidoPor: "Cliente"
                                 });
                                 resolve();
                             } catch (internalErr) {
-                                console.error("Fallo escribiendo en la Base de Datos:", internalErr);
                                 reject(internalErr);
                             }
                         }
@@ -1437,15 +1491,25 @@
             await Promise.all(promises);
             
             if(window.isUploading) {
-                decir("Tus referencias han sido cargadas");
+                clearTimeout(timeoutSugerencia); 
+                const sugerenciaFina = document.getElementById('sugerenciasDemora');
+                if(sugerenciaFina) sugerenciaFina.remove();
+
+                if (typeof decir === "function") decir("Tus referencias han sido cargadas");
                 alert("¡Referencias enviadas a David exitosamente!");
-                fileInput.value = '';
-                document.getElementById('clientDropZone').innerText = 'Toca para seleccionar tus referencias';
+                
+                // Reiniciar Inputs
+                clientSelectedFiles = null;
+                document.getElementById('clientFileInput').value = '';
+                document.getElementById('clientFolderInput').value = '';
+                document.getElementById('clientDropZoneText').innerText = 'Toca para seleccionar tus referencias';
+                
                 setTimeout(() => progressBox.style.display = 'none', 3000);
             }
         } catch(e) { 
-            console.error("Detalle del error de Storage/Cliente:", e);
-            alert(`Falla de subida: ${e.message || 'Error crítico en la carga.'}. Abre la consola (F12) para más detalles.`); 
+            clearTimeout(timeoutSugerencia);
+            console.error("Error crítico de subida:", e);
+            alert(`Falla de subida: ${e.message || 'Error en la carga.'}`); 
         }
         finally { 
             btn.disabled = false; 
@@ -1454,20 +1518,29 @@
         }
     });
 
-    document.getElementById('dropZone').addEventListener('click', () => document.getElementById('adminFileInput').click());
-    document.getElementById('adminFileInput').addEventListener('change', function() {
-        if (this.files.length > 0) document.getElementById('dropZone').innerText = `${this.files.length} archivo(s) listo(s)`;
-    });
+    // =======================================================
+    // LÓGICA DE SELECCIÓN Y CARGA PARA ADMIN
+    // =======================================================
+    document.getElementById('btnAdminSelectFiles').addEventListener('click', () => document.getElementById('adminFileInput').click());
+    document.getElementById('btnAdminSelectFolder').addEventListener('click', () => document.getElementById('adminFolderInput').click());
 
-    // CARGA DE ADMIN
+    function handleAdminSelection(e) {
+        adminSelectedFiles = e.target.files;
+        if(adminSelectedFiles && adminSelectedFiles.length > 0) {
+            document.getElementById('adminDropZoneText').innerText = `${adminSelectedFiles.length} elemento(s) seleccionado(s) listos para subir.`;
+        }
+    }
+    document.getElementById('adminFileInput').addEventListener('change', handleAdminSelection);
+    document.getElementById('adminFolderInput').addEventListener('change', handleAdminSelection);
+
+
     document.getElementById('btnAdminUploadFiles').addEventListener('click', async () => {
-        const fileInput = document.getElementById('adminFileInput');
-        const files = fileInput.files;
+        const files = adminSelectedFiles;
         const code = document.getElementById('adminProjectCodeInput').value.trim().toUpperCase();
-        const folder = document.getElementById('adminFolderInput').value.trim() || "General";
+        const folder = document.getElementById('adminFolderInputLabel').value.trim() || "General";
         const tipoArchivo = document.getElementById('adminFileType').value;
 
-        if(!code || !files || files.length === 0) return alert("Completa código y selecciona archivos.");
+        if(!code || !files || files.length === 0) return alert("Completa el código único y selecciona archivos.");
 
         const progressBox = document.getElementById('adminProgressBox');
         progressBox.style.display = 'block';
@@ -1482,7 +1555,8 @@
             const loadedBytes = new Array(files.length).fill(0);
 
             const promises = Array.from(files).map((file, idx) => {
-                const storageRef = sRef(storage, `uploads/${code}/david_output/${file.name}`);
+                const pathDestino = file.webkitRelativePath ? file.webkitRelativePath : file.name;
+                const storageRef = sRef(storage, `uploads/${code}/david_output/${pathDestino}`);
                 const uploadTask = uploadBytesResumable(storageRef, file);
                 activeUploadTasks.push(uploadTask); 
 
@@ -1499,15 +1573,18 @@
                         async () => {
                             try {
                                 const url = await getDownloadURL(uploadTask.snapshot.ref);
-                                const nodeKey = `David_${code}_${file.name}`.replace(/[\.#\$\/\[\]]/g, "_");
+                                const nodeKey = `David_${code}_${file.name}_${idx}`.replace(/[\.#\$\/\[\]]/g, "_");
                                 await set(dRef(realDB, 'proyectos/' + nodeKey), {
-                                    codigoProyecto: code, carpeta: folder, archivo: file.name,
-                                    urlDownload: url, fecha: new Date().toISOString().split('T')[0], 
-                                    subidoPor: "David", tipoArchivo: tipoArchivo
+                                    codigoProyecto: code, 
+                                    carpeta: folder, 
+                                    archivo: file.webkitRelativePath ? file.webkitRelativePath : file.name,
+                                    urlDownload: url, 
+                                    fecha: new Date().toISOString().split('T')[0], 
+                                    subidoPor: "David", 
+                                    tipoArchivo: tipoArchivo
                                 });
                                 resolve();
                             } catch (internalErr) {
-                                console.error("Fallo escribiendo en la Base de Datos:", internalErr);
                                 reject(internalErr);
                             }
                         }
@@ -1520,14 +1597,18 @@
             if(window.isUploading) {
                 decir("Tu material ha sido cargado con éxito");
                 alert("¡Entrega indexada correctamente!");
-                fileInput.value = '';
-                document.getElementById('dropZone').innerText = 'Seleccionar material terminado';
+                
+                // Reiniciar Inputs
+                adminSelectedFiles = null;
+                document.getElementById('adminFileInput').value = '';
+                document.getElementById('adminFolderInput').value = '';
+                document.getElementById('adminDropZoneText').innerText = 'Seleccionar material finalizado';
+                
                 renderizarTablaAdmin();
                 setTimeout(() => progressBox.style.display = 'none', 3000);
             }
         } catch(e) { 
-            console.error("Detalle del error de Storage/Admin:", e);
-            alert(`Falla de subida: ${e.message || 'Error crítico en la carga.'}. Abre la consola (F12) para más detalles.`);
+            alert(`Falla de subida: ${e.message || 'Error crítico en la carga.'}`);
         }
         finally { 
             btn.disabled = false; 
@@ -1604,7 +1685,6 @@
             if (snapshotPopup.exists()) {
                 const popData = snapshotPopup.val();
                 
-                // Set admin fields if we are in admin mode
                 const checkActive = document.getElementById('adminPopupActive');
                 if(checkActive) checkActive.checked = popData.activo !== false;
                 if(popData.titulo) document.getElementById('adminPopupTitle').value = popData.titulo;
@@ -1654,7 +1734,6 @@
         if(fotoBase64) payload.foto = fotoBase64;
         await set(dRef(realDB, 'config/perfil'), payload); alert("¡Perfil guardado!");
     });
-    
     
     document.getElementById('adminPopupImageInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -1708,11 +1787,8 @@
             const category = parent.getAttribute('data-category');
             const value = parseInt(this.getAttribute('data-value'));
             
-            // Limpiar activas anteriores
             parent.querySelectorAll('span').forEach(s => s.classList.remove('active'));
-            // Marcar la actual como activa
             this.classList.add('active');
-            
             surveyScores[category] = value;
         });
     });
@@ -1726,11 +1802,9 @@
             return alert("Por favor, califica las 3 categorías con estrellas antes de enviar.");
         }
         
-        // Calcula el promedio general
         const promedio = ((surveyScores.plataforma + surveyScores.trabajo + surveyScores.atencion) / 3).toFixed(1);
         
         try {
-            // Guardado opcional en Firebase (si deseas recolectar los datos para usarlos en la plataforma)
             await set(dRef(realDB, `encuestas_satisfaccion/${activeClientValidatedCode || 'anonimo_' + Date.now()}`), {
                 promedioFinal: promedio, 
                 detalles: surveyScores, 
