@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Asistente Virtual Inteligente - David</title>
     
+    <!-- Enlaces PWA -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#0a2540">
+    
     <style>
         :root {
             --azul-marino: #0a2540;
@@ -1881,6 +1885,21 @@
         }
     });
 
+</script>
+
+<!-- Registro del Service Worker para PWA -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(registration => {
+          console.log('PWA lista y registrada.');
+        })
+        .catch(error => {
+          console.log('Fallo en el registro de la PWA:', error);
+        });
+    });
+  }
 </script>
 </body>
 </html>
