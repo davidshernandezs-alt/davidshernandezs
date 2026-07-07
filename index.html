@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Asistente Virtual Inteligente - David</title>
     
-    <!-- Enlaces PWA -->
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#0a2540">
-    
     <style>
         :root {
             --azul-marino: #0a2540;
@@ -1320,7 +1316,7 @@
         attemptChangeScreen('screenControl');
     });
 
-    // --- VERIFICACIÓN DE CÓDIGO ---
+    // --- CORRECCIÓN PRINCIPAL: VERIFICACIÓN DE CÓDIGO AUTORIZADO ---
     document.getElementById('btnVerifyProjectCode').addEventListener('click', async () => {
         const code = document.getElementById('clientProjectCodeInput').value.trim().toUpperCase();
         if(!code) return alert("Por favor introduce tu código único.");
@@ -1332,12 +1328,35 @@
         galPrevia.innerHTML = '<p style="font-size:0.85rem;">Sincronizando vistas previas...</p>';
         
         try {
-            const snapshot = await get(child(dRef(realDB), "proyectos"));
+            // 1. Validar que el código es legítimo antes de permitir el acceso
+            let isValid = false;
+            
+            // Buscar en clientes nuevos generados por Plumin
+            const snapNuevos = await get(child(dRef(realDB), "clientes_nuevos"));
+            if(snapNuevos.exists()){
+                const data = snapNuevos.val();
+                for(let k in data) { if(data[k].codigoAsignado === code) isValid = true; }
+            }
+            
+            // Buscar en proyectos existentes (archivos ya subidos por David o el Cliente)
+            const snapshotProy = await get(child(dRef(realDB), "proyectos"));
+            if(!isValid && snapshotProy.exists()){
+                const data = snapshotProy.val();
+                for(let k in data) { if(data[k].codigoProyecto === code) isValid = true; }
+            }
+
+            // Si el código no existe en ninguna base de datos, bloqueamos el acceso
+            if(!isValid) {
+                galFinal.innerHTML = ''; galPrevia.innerHTML = '';
+                return alert("ACCESO DENEGADO: El código de proyecto ingresado no existe o no ha sido autorizado.");
+            }
+
+            // 2. Si el código es válido, ahora sí cargamos los archivos
             galFinal.innerHTML = ''; galPrevia.innerHTML = '';
             let countFinal = 0; let countPrevia = 0;
             
-            if(snapshot.exists()) {
-                const data = snapshot.val();
+            if(snapshotProy.exists()) {
+                const data = snapshotProy.val();
                 for(let key in data) {
                     if(data[key].codigoProyecto === code && data[key].subidoPor === "David") {
                         const isPrevia = data[key].tipoArchivo === 'previa';
@@ -1359,9 +1378,12 @@
             document.getElementById('btnTabDescargar').innerText = `📥 Mis Entregas (${countFinal})`;
             document.getElementById('btnTabPrevia').innerText = `👁️ Vistas Previas (${countPrevia})`;
 
+            // Dar la bienvenida al panel privado
             document.getElementById('codeVerificationBlock').style.display = 'none';
-            document.getElementById('privateGallerySection').style.display = 'block'; document.getElementById('btnNotifClient').style.display = 'inline-block';
-            activeClientValidatedCode = code; decir("Canal privado sincronizado");
+            document.getElementById('privateGallerySection').style.display = 'block'; 
+            document.getElementById('btnNotifClient').style.display = 'inline-block';
+            activeClientValidatedCode = code; 
+            decir("Canal privado sincronizado");
 
             if(localStorage.getItem('autoOpenPreviewTab') === 'true') {
                 document.getElementById('btnTabPrevia').click();
@@ -1871,35 +1893,21 @@
         const promedio = ((surveyScores.plataforma + surveyScores.trabajo + surveyScores.atencion) / 3).toFixed(1);
         
         try {
-            await set(dRef(realDB, `encuestas_satisfaccion/${activeClientValidatedCode || 'anonimo_' + Date.now()}`), {
-                promedioFinal: promedio, 
-                detalles: surveyScores, 
-                fecha: new Date().toISOString().split('T')[0]
+            await set(dRef(realDB, `encuestas_satisfaccion/${activeClientValidatedCode}`), {
+                plataforma: surveyScores.plataforma,
+                trabajo: surveyScores.trabajo,
+                atencion: surveyScores.atencion,
+                promedio: promedio,
+                fecha: new Date().toISOString()
             });
-            
-            alert(`¡Gracias por tu evaluación de ${promedio} estrellas! Tu calificación nos ayuda a seguir mejorando.`);
+            alert(`¡Gracias por tu evaluación! Has calificado el proyecto con un promedio de ${promedio} estrellas.`);
             document.getElementById('surveyModal').style.display = 'none';
-            
-        } catch (e) {
-            alert("Hubo un error de conexión al enviar la encuesta.");
+        } catch(e) {
+            alert("Error al enviar la evaluación.");
+            console.error(e);
         }
     });
 
-</script>
-
-<!-- Registro del Service Worker para PWA -->
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(registration => {
-          console.log('PWA lista y registrada.');
-        })
-        .catch(error => {
-          console.log('Fallo en el registro de la PWA:', error);
-        });
-    });
-  }
 </script>
 </body>
 </html>
