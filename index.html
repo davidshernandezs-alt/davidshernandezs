@@ -1344,6 +1344,7 @@
     });
 
 
+    // --- NUEVA LÓGICA DE VALIDACIÓN ESTRICTA ---
     document.getElementById('btnGoControl').addEventListener('click', () => {
         document.getElementById('privateGallerySection').style.display = 'none';
         document.getElementById('codeVerificationBlock').style.display = 'block'; document.getElementById('btnNotifClient').style.display = 'none';
@@ -1355,13 +1356,42 @@
         const code = document.getElementById('clientProjectCodeInput').value.trim().toUpperCase();
         if(!code) return alert("Por favor introduce tu código único.");
         
-        const galFinal = document.getElementById('galleryContentFinal');
-        const galPrevia = document.getElementById('galleryContentPrevia');
-        
-        galFinal.innerHTML = '<p style="font-size:0.85rem;">Sincronizando entregas...</p>';
-        galPrevia.innerHTML = '<p style="font-size:0.85rem;">Sincronizando vistas previas...</p>';
-        
+        const btn = document.getElementById('btnVerifyProjectCode');
+        const originalText = btn.innerText;
+        btn.innerText = "Verificando...";
+        btn.disabled = true;
+
         try {
+            // Validación estricta cruzada
+            let isValid = false;
+
+            const snapNuevos = await get(child(dRef(realDB), "clientes_nuevos"));
+            if(snapNuevos.exists()){
+                const data = snapNuevos.val();
+                for(let k in data) { if(data[k].codigoAsignado === code) isValid = true; }
+            }
+
+            if(!isValid) {
+                const snapProy = await get(child(dRef(realDB), "proyectos"));
+                if(snapProy.exists()){
+                    const data = snapProy.val();
+                    for(let k in data) { if(data[k].codigoProyecto === code) isValid = true; }
+                }
+            }
+
+            if(!isValid) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                return alert("Código inválido o no registrado. Por favor verifica el código con David o Plumín e intenta de nuevo.");
+            }
+
+            // Si pasa la validación, procedemos a cargar los datos del cliente
+            const galFinal = document.getElementById('galleryContentFinal');
+            const galPrevia = document.getElementById('galleryContentPrevia');
+            
+            galFinal.innerHTML = '<p style="font-size:0.85rem;">Sincronizando entregas...</p>';
+            galPrevia.innerHTML = '<p style="font-size:0.85rem;">Sincronizando vistas previas...</p>';
+            
             const snapshot = await get(child(dRef(realDB), "proyectos"));
             galFinal.innerHTML = ''; galPrevia.innerHTML = '';
             let countFinal = 0; let countPrevia = 0;
@@ -1397,7 +1427,12 @@
                 document.getElementById('btnTabPrevia').click();
                 localStorage.removeItem('autoOpenPreviewTab');
             }
-        } catch(err) { alert("Error de conexión con la Base de Datos."); }
+        } catch(err) { 
+            alert("Error de conexión con la Base de Datos."); 
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
     });
 
     document.getElementById('btnNotifClient').addEventListener('click', () => {
