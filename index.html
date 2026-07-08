@@ -208,8 +208,7 @@
         <h2 id="previewTitle" style="font-size:1.2rem; color:var(--azul-marino); margin-top:10px;">Vista Previa</h2>
         <div id="previewContainer" style="margin: 15px 0; max-height: 60vh; overflow: auto; display:flex; justify-content:center; align-items:center; background:#f8fafc; border-radius:8px; border:1px solid var(--borde); padding:10px;">
         </div>
-        <a id="btnDownloadPreview" href="#" class="btn-main" style="display:inline-block; text-decoration:none; margin-top:10px; width:100%; box-sizing:border-box;" download>📥 Descargar Archivo</a>
-    </div>
+        </div>
 </div>
 
 <div class="announcement-modal" id="popupModal">
@@ -416,7 +415,11 @@
                 <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid var(--borde);">
                     <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--azul-marino);">Entregas Listas (Sin Marca de Agua)</h4>
                     <p style="font-size:0.75rem; color:#475569; margin-bottom:10px;">Aquí encontrarás tus proyectos listos para descargar una vez confirmado el pago.</p>
+                    
+                    <button class="btn-main" id="btnDescargarSeleccionados" style="width: 100%; margin-bottom: 15px; background: var(--azul-marino); display: none;" onclick="descargarMultiplesCliente()">📥 Descargar Seleccionados</button>
+                    
                     <div id="galleryContentFinal"></div>
+                    
                     <button class="btn-main" style="width: 100%; margin-top: 15px; background: var(--oro); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);" onclick="document.getElementById('surveyModal').style.display='flex'">⭐ Calificar Proyecto Finalizado</button>
                 </div>
             </div>
@@ -588,8 +591,9 @@
         </div>
 
         <h3>Seguimiento Financiero y Monitor de Archivos</h3>
-        <div class="form-group">
-            <input type="text" id="tableFilterInput" placeholder="🔍 Filtrar por código de proyecto o nombre del cliente...">
+        <div style="display:flex; gap:10px; margin-bottom:15px; align-items:center;">
+            <input type="text" id="tableFilterInput" placeholder="🔍 Filtrar por código de proyecto o nombre del cliente..." style="flex-grow:1; padding:10px; border:1px solid var(--borde); border-radius:8px;">
+            <button class="btn-upload" id="btnDeleteSelectedAdmin" style="background:#dc2626; width:auto; padding:10px 15px; font-size: 0.8rem; display:none;" onclick="eliminarMultiplesAdmin()">🗑️ Eliminar Seleccionados</button>
         </div>
         
         <div class="admin-table-container" id="adminGroupedFilesContainer" style="border:none; background:transparent;"></div>
@@ -630,7 +634,6 @@
     let otrosBancosActivo = "No configurado aún";
 
     let currentStep = 1;
-    // INICIALIZACIÓN ACTUALIZADA: Incluye detallesProyecto para evitar errores de referencia vacía
     let orderData = {
         modalidad: "", itemsSeleccionados: [], itemsPreseleccionados: [], totalInversion: 0, planEscogido: "", nombreCliente: "", telefonoCliente: "", codigoUnico: "", esquemaPago: "", metricaEnganche: "", detallesProyecto: ""
     };
@@ -660,6 +663,64 @@
         }
     };
 
+    // Funciones globales para control múltiple
+    window.toggleClientDownloadBtn = function() {
+        const chks = document.querySelectorAll('.chk-client-download:checked');
+        document.getElementById('btnDescargarSeleccionados').style.display = chks.length > 0 ? 'block' : 'none';
+    };
+
+    window.descargarMultiplesCliente = async function() {
+        const checkboxes = document.querySelectorAll('.chk-client-download:checked');
+        if(checkboxes.length === 0) return alert("Selecciona al menos un archivo.");
+        
+        alert(`Iniciando descarga de ${checkboxes.length} archivo(s). Las ventanas de descarga se abrirán enseguida.`);
+        
+        for (let chk of checkboxes) {
+            const url = chk.value;
+            const filename = chk.getAttribute('data-filename');
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch(e) {
+                window.open(url, '_blank');
+            }
+        }
+    };
+
+    window.toggleAllAdmin = function(sourceCheckbox, groupKey) {
+        const checkboxes = document.querySelectorAll('.chk-group-' + groupKey);
+        checkboxes.forEach(chk => chk.checked = sourceCheckbox.checked);
+        window.toggleAdminDeleteBtn();
+    };
+
+    window.toggleAdminDeleteBtn = function() {
+        const chks = document.querySelectorAll('.chk-admin-delete:checked');
+        document.getElementById('btnDeleteSelectedAdmin').style.display = chks.length > 0 ? 'block' : 'none';
+    };
+
+    window.eliminarMultiplesAdmin = async function() {
+        const checkboxes = document.querySelectorAll('.chk-admin-delete:checked');
+        if(checkboxes.length === 0) return;
+        if(confirm(`¿Estás seguro de que deseas eliminar permanentemente ${checkboxes.length} archivo(s)?`)) {
+            try {
+                for(let chk of checkboxes) {
+                    await remove(dRef(realDB, 'proyectos/' + chk.value));
+                }
+                alert("Archivos eliminados exitosamente.");
+                document.getElementById('btnDeleteSelectedAdmin').style.display = 'none';
+                renderizarTablaAdmin();
+            } catch(e) {
+                alert("Error al eliminar archivos.");
+            }
+        }
+    };
+
     window.abrirVistaPrevia = function(url, filename) {
         document.getElementById('previewTitle').innerText = filename;
         const container = document.getElementById('previewContainer');
@@ -675,7 +736,6 @@
             container.innerHTML = `<p style="color:#64748b; font-size:0.9rem;">Vista previa no disponible para este tipo de archivo.</p>`;
         }
         
-        document.getElementById('btnDownloadPreview').href = url;
         document.getElementById('previewModal').style.display = 'flex';
     };
 
@@ -717,7 +777,6 @@
         if (vplumin) vplumin.pause();
     }
 
-    // NUEVO: Función procesarMensajeIa actualizada completamente
     function procesarMensajeIa() {
         const inputField = document.getElementById('clientIaTextInput');
         const query = inputField.value.trim().toLowerCase();
@@ -735,7 +794,6 @@
         else if(horaActual >= 19) saludoPorHora = "buenas noches";
         const esSaludo = query.match(/\b(hola|buenas|saludos|buenos d[íi]as|buenas tardes|buenas noches)\b/i);
 
-        // 1. Detectar Código de Proyecto
         const codeRegex = /(dv26-\d{4})/i;
         if (codeRegex.test(query)) {
             const codigoDetectado = query.match(codeRegex)[0].toUpperCase();
@@ -757,7 +815,6 @@
             return;
         }
 
-        // 2. NUEVO: Detectar intención de Pago
         const pagoRegex = /\b(pago|pagar|métodos|metodos|paypal|binance|zelle|precio|costo|pagos)\b/i;
         if (pagoRegex.test(query) && !query.includes("logo") && !query.includes("video")) {
             const msgPago = `Para tu comodidad, aceptamos varias plataformas: PayPal 🔵, Binance Pay 🟡 y métodos locales (Zelle/Pago Móvil) 🟢. ¿Quieres cotizar un servicio o ya tienes un código de proyecto para realizar tu pago?`;
@@ -772,7 +829,6 @@
             return;
         }
 
-        // 3. Detectar Servicios
         let detectedServices = [];
         for (let cat in servicesMatrix) {
             for (let serviceName in servicesMatrix[cat]) {
@@ -782,7 +838,6 @@
             }
         }
 
-        // 4. Lógica de Respuestas
         if (detectedServices.length > 0) {
             let msg = esSaludo ? `¡Hola, ${saludoPorHora}! ` : "";
             msg += `Qué genial. He marcado ${detectedServices.join(", ")} en nuestro cotizador. Para que David pueda hacer un trabajo espectacular, ayúdame a seleccionar tus servicios y cuéntame un poco más de tu idea.`;
@@ -1032,7 +1087,6 @@
 
     function startIaWizard(step = 1, customMessage = null) {
         currentStep = step;
-        // SE ACTUALIZÓ PARA REINICIAR detallesProyecto CORRECTAMENTE
         if(step === 1) orderData = { modalidad: "", itemsSeleccionados: [], itemsPreseleccionados: [], totalInversion: 0, planEscogido: "", nombreCliente: "", telefonoCliente: "", codigoUnico: "", esquemaPago: "", metricaEnganche: "", detallesProyecto: "" };
         document.getElementById('panelIaPasos').style.display = 'flex';
         renderIaStep(customMessage);
@@ -1058,7 +1112,6 @@
             document.getElementById('btnCancelWizard').addEventListener('click', () => { ocultarPaneles(); });
         }
 
-        // NUEVO: Paso 2 Actualizado con textarea para el brief del cliente
         else if (currentStep === 2) {
             const txt = customMessage || "Perfecto. Selecciona las piezas que requieres. Además, puedes escribirme un breve resumen de lo que tienes en mente para que David lo sepa.";
             aiBox.innerText = txt; decir(txt);
@@ -1076,7 +1129,6 @@
             }
             HTMLMatrix += `</div>`;
 
-            // AÑADIDO: Textarea para recopilar el brief del cliente
             container.innerHTML = `
                 <h4 style="margin:0 0 10px 0; font-size:0.85rem;">1. Selecciona los servicios:</h4>
                 ${HTMLMatrix}
@@ -1089,7 +1141,6 @@
                 const checkboxes = document.querySelectorAll('.chk-service:checked');
                 if (checkboxes.length === 0) return alert("Por favor selecciona al menos un servicio de la matriz.");
                 
-                // Guardamos el brief
                 orderData.detallesProyecto = document.getElementById('clienteBrief').value.trim() || "No especificó detalles previos.";
                 
                 orderData.totalInversion = 0;
@@ -1207,7 +1258,6 @@
             });
         }
 
-        // NUEVO: Paso 5 Actualizado para inyectar los detalles (Brief) en el mensaje de WhatsApp
         else if (currentStep === 5) {
             const txt = `¡Excelente, se ha asignado el código único ${orderData.codigoUnico}! Haz clic abajo para enviar los detalles directamente al WhatsApp corporativo.`;
             aiBox.innerText = txt; decir(txt);
@@ -1220,10 +1270,9 @@
             document.getElementById('btnResetWizard').addEventListener('click', () => { ocultarPaneles(); });
             
             document.getElementById('btnFinalWhatsapp').addEventListener('click', () => {
-                const destinoDavid = "584120000000"; // Asegúrate de colocar tu número
+                const destinoDavid = "584120000000"; 
                 let detalleProyecto = orderData.modalidad === "Individual" ? `Diseño Individual: ${orderData.itemsSeleccionados.join(' + ')}` : `${orderData.planEscogido}`;
                 
-                // Incorporamos el "Brief" o nota del cliente al mensaje
                 let notaCliente = orderData.detallesProyecto ? `\n💡 Detalles del Cliente: ${orderData.detallesProyecto}` : "";
                 
                 const mensajeCompleto = `NUEVO PROYECTO REGISTRADO\n🔑 Código Único: ${orderData.codigoUnico}\n👤 Cliente: ${orderData.nombreCliente}\n📞 Contacto: ${orderData.telefonoCliente}\n📋 Modalidad: ${orderData.modalidad}\n🛠️ Detalle: ${detalleProyecto}${notaCliente}\n💰 Inversión Total: $${orderData.totalInversion}\n📉 Enganche: ${orderData.metricaEnganche}\n🗓️ Esquema: ${orderData.esquemaPago}`;
@@ -1252,7 +1301,7 @@
     function renderAdminMatrixEditor(category) {
         const wrapper = document.getElementById('editorMatrizContenedor');
         wrapper.innerHTML = "";
-        let targetData = servicesMatrix[category] || {}; // Protección contra undefined si la categoría queda vacía
+        let targetData = servicesMatrix[category] || {}; 
         for (let key in targetData) {
             wrapper.innerHTML += `
                 <div class="matrix-row" style="background:white; padding:8px; border:1px solid var(--borde); border-radius:8px; display:flex; flex-direction:column; gap:5px;">
@@ -1297,8 +1346,6 @@
         e.target.classList.add('active'); renderAdminMatrixEditor('otros'); 
     });
 
-
-    // LÓGICA DE GUARDADO TOTALMENTE REPARADA Y AISLADA
     document.getElementById('btnSaveMatrixData').addEventListener('click', async () => {
         const activeCat = document.querySelector('#screenAdmin .tab-btn.active').id.replace('btnMat', '').toLowerCase();
         let catKey = 'diseno';
@@ -1314,7 +1361,6 @@
             
             const newName = nameInput.value.trim().replace(/[\.#\$\/\[\]]/g, "");
             
-            // Protección contra precios vacíos (NaN en Firebase daña todo el objeto)
             let price = parseFloat(priceInput.value);
             if (isNaN(price) || price < 0) price = 0; 
 
@@ -1323,28 +1369,23 @@
             }
         });
 
-        // Firebase genera un error crítico si intentamos guardar un objeto completamente vacío
         if (Object.keys(newCategoryData).length === 0) {
             alert("No puedes dejar una categoría totalmente vacía. Añade al menos un servicio.");
             return;
         }
 
         try { 
-            // ACTUALIZACIÓN EXCLUSIVA: Solo se envía la pestaña que estás editando a Firebase
             await set(dRef(realDB, `config/matriz/${catKey}`), newCategoryData); 
             
-            servicesMatrix[catKey] = newCategoryData; // Actualizar memoria local
+            servicesMatrix[catKey] = newCategoryData;
             alert("¡Matriz actualizada con éxito en la nube!");
             renderAdminMatrixEditor(catKey);
         } catch(e) { 
             console.error("Detalle del fallo:", e);
-            // Ahora te dirá EXACTAMENTE por qué falló, en lugar del falso positivo.
             alert(`Error de conexión con Firebase. Motivo técnico: ${e.message}`); 
         }
     });
 
-
-    // --- NUEVA LÓGICA DE VALIDACIÓN ESTRICTA ---
     document.getElementById('btnGoControl').addEventListener('click', () => {
         document.getElementById('privateGallerySection').style.display = 'none';
         document.getElementById('codeVerificationBlock').style.display = 'block'; document.getElementById('btnNotifClient').style.display = 'none';
@@ -1362,7 +1403,6 @@
         btn.disabled = true;
 
         try {
-            // Validación estricta cruzada
             let isValid = false;
 
             const snapNuevos = await get(child(dRef(realDB), "clientes_nuevos"));
@@ -1385,7 +1425,7 @@
                 return alert("Código inválido o no registrado. Por favor verifica el código con David o Plumín e intenta de nuevo.");
             }
 
-            // Si pasa la validación, procedemos a cargar los datos del cliente
+            document.getElementById('btnDescargarSeleccionados').style.display = 'none';
             const galFinal = document.getElementById('galleryContentFinal');
             const galPrevia = document.getElementById('galleryContentPrevia');
             
@@ -1401,14 +1441,25 @@
                 for(let key in data) {
                     if(data[key].codigoProyecto === code && data[key].subidoPor === "David") {
                         const isPrevia = data[key].tipoArchivo === 'previa';
-                        const itemHtml = `
-                            <div style="padding:10px; border-bottom:1px solid var(--borde); display:flex; justify-content:space-between; align-items:center;">
-                                <div><strong>${data[key].archivo}</strong><br><small style="color:#64748b;">${data[key].fecha || ''}</small></div>
-                                <a href="#" onclick="abrirVistaPrevia('${data[key].urlDownload}', '${data[key].archivo}')" style="color:var(--naranja); font-weight:bold; text-decoration:underline; font-size:0.85rem;">${isPrevia ? 'Ver Borrador 👁️' : 'Descargar 📥'}</a>
-                            </div>`;
-                            
-                        if(isPrevia) { galPrevia.innerHTML += itemHtml; countPrevia++; } 
-                        else { galFinal.innerHTML += itemHtml; countFinal++; }
+                        
+                        if(isPrevia) { 
+                            galPrevia.innerHTML += `
+                                <div style="padding:10px; border-bottom:1px solid var(--borde); display:flex; justify-content:space-between; align-items:center;">
+                                    <div><strong>${data[key].archivo}</strong><br><small style="color:#64748b;">${data[key].fecha || ''}</small></div>
+                                    <a href="#" onclick="abrirVistaPrevia('${data[key].urlDownload}', '${data[key].archivo}')" style="color:var(--naranja); font-weight:bold; text-decoration:underline; font-size:0.85rem;">Ver Borrador 👁️</a>
+                                </div>`;
+                            countPrevia++; 
+                        } else { 
+                            galFinal.innerHTML += `
+                                <div style="padding:10px; border-bottom:1px solid var(--borde); display:flex; justify-content:space-between; align-items:center;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <input type="checkbox" class="chk-client-download" value="${data[key].urlDownload}" data-filename="${data[key].archivo}" onchange="toggleClientDownloadBtn()">
+                                        <div><strong>${data[key].archivo}</strong><br><small style="color:#64748b;">${data[key].fecha || ''}</small></div>
+                                    </div>
+                                    <a href="${data[key].urlDownload}" target="_blank" download style="color:var(--azul-marino); font-weight:bold; text-decoration:underline; font-size:0.85rem;">Descargar 📥</a>
+                                </div>`;
+                            countFinal++; 
+                        }
                     }
                 }
             }
@@ -1679,6 +1730,7 @@
     async function renderizarTablaAdmin() {
         const container = document.getElementById('adminGroupedFilesContainer');
         try {
+            document.getElementById('btnDeleteSelectedAdmin').style.display = 'none';
             const snapshot = await get(child(dRef(realDB), "proyectos"));
             container.innerHTML = '';
             
@@ -1720,6 +1772,9 @@
                         <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
                             <thead>
                                 <tr>
+                                    <th style="padding: 8px; border-bottom: 1px solid var(--borde); width: 30px;">
+                                        <input type="checkbox" onchange="window.toggleAllAdmin(this, '${groupKey}')">
+                                    </th>
                                     <th style="padding: 8px; border-bottom: 1px solid var(--borde);">Origen</th>
                                     <th style="padding: 8px; border-bottom: 1px solid var(--borde);">Archivo</th>
                                     <th style="padding: 8px; border-bottom: 1px solid var(--borde);">Fecha</th>
@@ -1736,6 +1791,7 @@
                         
                         tableHtml += `
                             <tr style="border-bottom: 1px dashed var(--borde);">
+                                <td style="padding: 8px;"><input type="checkbox" class="chk-admin-delete chk-group-${groupKey}" value="${item.dbKey}" onchange="window.toggleAdminDeleteBtn()"></td>
                                 <td style="padding: 8px;">${badge}${badgeType}</td>
                                 <td style="padding: 8px;"><a href="#" onclick="abrirVistaPrevia('${item.urlDownload}', '${item.archivo}')" style="color:var(--azul-marino); font-weight:600; text-decoration:underline;">${item.archivo}</a></td>
                                 <td style="padding: 8px; color:#64748b;">${item.fecha || '-'}</td>
