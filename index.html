@@ -193,9 +193,8 @@
             color: var(--oro); 
         }
 
-        /* Ajustes para Grupos Desplegables en Admin */
-        details.project-group-details summary::-webkit-details-marker { display: none; }
-        details.project-group-details[open] summary { border-bottom-color: transparent; }
+        /* Ajustes para Grupos Desplegables (Ocultar la flecha nativa) */
+        details summary::-webkit-details-marker { display: none; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -475,125 +474,150 @@
             </button>
         </div>
 
-        <div style="background:#f0fbf6; border:2px solid var(--verde-whatsapp); padding:20px; border-radius:16px; margin-bottom:20px;">
-            <h3 style="color:var(--verde-whatsapp); margin-bottom:5px;">💵 Configurar Cuentas de Recaudación</h3>
-            <p style="font-size: 0.75rem; color:#475569; margin-bottom: 12px;">Modifica tus cuentas aquí. Los clientes deberán ingresar su código de proyecto en el Modal de Seguridad para ver esta información.</p>
-            <div class="form-group">
-                <label>ENLACE COMPLETO DE PAYPAL ME</label>
-                <input type="text" id="adminPaypalInput" placeholder="Ej. https://www.paypal.me/dsamuelhs">
-            </div>
-            <div class="form-group">
-                <label>BINANCE ID DE PAY / CORREO ELECTRÓNICO</label>
-                <input type="text" id="adminBinanceInput" placeholder="Ej. Pay ID: 153791649 o dsamuelhs@gmail.com">
-            </div>
-            <div class="form-group">
-                <label>OTROS BANCOS (Zelle, Pago Móvil, etc.)</label>
-                <textarea id="adminOtrosBancosInput" rows="3" placeholder="Ej. Zelle: david@mail.com | Pago Móvil: 0412-0000000 V-12345678 Banesco"></textarea>
-            </div>
-            <button class="btn-upload" id="btnSaveFinancialAccounts" style="background:var(--verde-whatsapp); width:auto; padding:8px 22px;">Guardar Cuentas de Pago</button>
-        </div>
-
-        <div style="background:#fffaf7; border:2px solid var(--naranja); padding:20px; border-radius:16px; margin-bottom:20px;">
-            <h3 style="color:var(--naranja);">📊 Administrador de Matriz Unificada de Precios</h3>
-            <p style="font-size: 0.75rem; color:#475569; margin-bottom: 15px;">Modifica las tarifas individuales. La IA absorberá estos cambios automáticamente para calcular presupuestos.</p>
-            
-            <div class="tabs-nav">
-                <button class="tab-btn active" id="btnMatGráfico" type="button">🎨 Diseño Gráfico</button>
-                <button class="tab-btn" id="btnMatVideo" type="button">🎬 Edición & Animación</button>
-                <button class="tab-btn" id="btnMatOtros" type="button">📦 Otros & Especiales</button>
-            </div>
-
-            <div id="editorMatrizContenedor" style="display: grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 15px;"></div>
-            <button class="btn-upload" id="btnSaveMatrixData" style="background:var(--naranja);">Guardar Cambios de la Matriz en la Nube</button>
-        </div>
-
-        <div style="background:#f0f4f8; border:1px solid var(--azul-marino); padding:20px; border-radius:16px; margin-bottom:20px;">
-            <h3 style="color:var(--azul-marino); margin-bottom:5px;">📤 Cargar Entrega para Cliente</h3>
-            
-            <div class="form-group">
-                <label>TIPO DE ARCHIVO A ENVIAR</label>
-                <select id="adminFileType" style="border-color:var(--naranja); font-weight:600;">
-                    <option value="previa">👁️ Vista Previa (Borrador con Marca de Agua)</option>
-                    <option value="final">✅ Entrega Final (Limpio para Descarga)</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>NOMBRE DEL CLIENTE / PROYECTO</label>
-                <input type="text" id="adminFolderInputLabel" placeholder="Ej. Globovisión, Nailuj, Evento Carrera">
-            </div>
-            <div class="form-group">
-                <label>CÓDIGO ÚNICO DEL PROYECTO DESTINO</label>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="adminProjectCodeInput" placeholder="Ej. DV26-4819" style="text-transform: uppercase; font-weight:bold; letter-spacing:1px;">
-                    <button class="btn-gallery" type="button" style="padding:0 15px; font-size:0.8rem;" id="btnGenerateRandomCode">Generar</button>
+        <details style="background:#f0fbf6; border:2px solid var(--verde-whatsapp); border-radius:16px; margin-bottom:20px; overflow:hidden;">
+            <summary style="padding:20px; font-weight:bold; color:var(--verde-whatsapp); cursor:pointer; list-style:none; outline:none; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">💵 Configurar Cuentas de Recaudación</h3>
+                <span>▾</span>
+            </summary>
+            <div style="padding: 0 20px 20px 20px; border-top:1px dashed var(--verde-whatsapp); margin-top:5px; padding-top:15px; cursor:default;">
+                <p style="font-size: 0.75rem; color:#475569; margin-bottom: 12px;">Modifica tus cuentas aquí. Los clientes deberán ingresar su código de proyecto en el Modal de Seguridad para ver esta información.</p>
+                <div class="form-group">
+                    <label>ENLACE COMPLETO DE PAYPAL ME</label>
+                    <input type="text" id="adminPaypalInput" placeholder="Ej. https://www.paypal.me/dsamuelhs">
                 </div>
-            </div>
-            
-            <div class="drop-zone" style="padding:15px; cursor:default; margin-bottom:15px;">
-                <div id="adminDropZoneText" style="margin-bottom:12px; font-weight:bold; color:var(--azul-marino);">Seleccionar material finalizado</div>
-                <div style="display:flex; gap:10px; justify-content:center;">
-                    <button type="button" class="btn-gallery" id="btnAdminSelectFiles" style="padding:8px 15px; font-size:0.8rem; border:1px solid var(--naranja);">📄 Archivos sueltos</button>
-                    <button type="button" class="btn-gallery" id="btnAdminSelectFolder" style="padding:8px 15px; font-size:0.8rem; border:1px solid var(--naranja);">📁 Subir Carpeta</button>
+                <div class="form-group">
+                    <label>BINANCE ID DE PAY / CORREO ELECTRÓNICO</label>
+                    <input type="text" id="adminBinanceInput" placeholder="Ej. Pay ID: 153791649 o dsamuelhs@gmail.com">
                 </div>
-            </div>
-            
-            <input type="file" id="adminFileInput" hidden multiple>
-            <input type="file" id="adminFolderInput" hidden webkitdirectory directory allowdirs>
-            
-            <div class="simple-progress-container" id="adminProgressBox">
-                <div class="fitness-status-txt" id="adminProgressTxt">Preparando carga... 0%</div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" id="adminProgressBarFill"></div>
+                <div class="form-group">
+                    <label>OTROS BANCOS (Zelle, Pago Móvil, etc.)</label>
+                    <textarea id="adminOtrosBancosInput" rows="3" placeholder="Ej. Zelle: david@mail.com | Pago Móvil: 0412-0000000 V-12345678 Banesco"></textarea>
                 </div>
+                <button class="btn-upload" id="btnSaveFinancialAccounts" style="background:var(--verde-whatsapp); width:auto; padding:8px 22px;">Guardar Cuentas de Pago</button>
             </div>
-            
-            <button class="btn-upload" id="btnAdminUploadFiles" style="background:var(--naranja);">🚀 Cargar Entrega del Proyecto</button>
-        </div>
+        </details>
 
-        <div style="background:#f8fafc; border:1px solid var(--borde); padding:20px; border-radius:12px; margin-bottom:20px;">
-            <h3>Editar Perfil de Presentación</h3>
-            <div class="form-group">
-                <label>SUBIR TU FOTO (JPG / PNG)</label>
-                <input type="file" id="adminPhotoInput" accept="image/*">
-            </div>
-            <div class="form-group">
-                <label>DESCRIPCIÓN PROFESIONAL</label>
-                <textarea id="adminDescInput" rows="3">Productor audiovisual y diseñador gráfico. Especialista en la creación de interfaces minimalistas, identidad corporativa y edición cinematográfica de alta calidad.</textarea>
-            </div>
-            <button class="btn-upload" style="width:auto; padding:8px 20px;" id="btnSaveAdminProfile">Guardar Cambios de Perfil</button>
-        </div>
+        <details style="background:#fffaf7; border:2px solid var(--naranja); border-radius:16px; margin-bottom:20px; overflow:hidden;">
+            <summary style="padding:20px; font-weight:bold; color:var(--naranja); cursor:pointer; list-style:none; outline:none; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">📊 Administrador de Matriz Unificada de Precios</h3>
+                <span>▾</span>
+            </summary>
+            <div style="padding: 0 20px 20px 20px; border-top:1px dashed var(--naranja); margin-top:5px; padding-top:15px; cursor:default;">
+                <p style="font-size: 0.75rem; color:#475569; margin-bottom: 15px;">Modifica las tarifas individuales. La IA absorberá estos cambios automáticamente para calcular presupuestos.</p>
+                
+                <div class="tabs-nav">
+                    <button class="tab-btn active" id="btnMatGráfico" type="button">🎨 Diseño Gráfico</button>
+                    <button class="tab-btn" id="btnMatVideo" type="button">🎬 Edición & Animación</button>
+                    <button class="tab-btn" id="btnMatOtros" type="button">📦 Otros & Especiales</button>
+                </div>
 
-        <div style="background:#fffaf7; border:1px solid #ffe4d3; padding:20px; border-radius:12px; margin-bottom:20px;">
-            <h3>📢 Configurar Ventana Emergente (Comunicado)</h3>
-            <div class="form-group" style="display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" id="adminPopupActive" checked style="width: 20px; height: 20px; cursor:pointer;">
-                <label style="margin:0; font-size:0.9rem; color:var(--naranja);">Activar Comunicado</label>
+                <div id="editorMatrizContenedor" style="display: grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 15px;"></div>
+                <button class="btn-upload" id="btnSaveMatrixData" style="background:var(--naranja);">Guardar Cambios de la Matriz en la Nube</button>
             </div>
-            <div class="form-group">
-                <label>TÍTULO DEL POP-UP</label>
-                <input type="text" id="adminPopupTitle" placeholder="Ej. ¡Novedades de la semana!">
+        </details>
+
+        <details style="background:#f0f4f8; border:1px solid var(--azul-marino); border-radius:16px; margin-bottom:20px; overflow:hidden;" open>
+            <summary style="padding:20px; font-weight:bold; color:var(--azul-marino); cursor:pointer; list-style:none; outline:none; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">📤 Cargar Entrega para Cliente</h3>
+                <span>▾</span>
+            </summary>
+            <div style="padding: 0 20px 20px 20px; border-top:1px dashed var(--azul-marino); margin-top:5px; padding-top:15px; cursor:default;">
+                <div class="form-group">
+                    <label>TIPO DE ARCHIVO A ENVIAR</label>
+                    <select id="adminFileType" style="border-color:var(--naranja); font-weight:600;">
+                        <option value="previa">👁️ Vista Previa (Borrador con Marca de Agua)</option>
+                        <option value="final">✅ Entrega Final (Limpio para Descarga)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>NOMBRE DEL CLIENTE / PROYECTO</label>
+                    <input type="text" id="adminFolderInputLabel" placeholder="Ej. Globovisión, Nailuj, Evento Carrera">
+                </div>
+                <div class="form-group">
+                    <label>CÓDIGO ÚNICO DEL PROYECTO DESTINO</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="adminProjectCodeInput" placeholder="Ej. DV26-4819" style="text-transform: uppercase; font-weight:bold; letter-spacing:1px;">
+                        <button class="btn-gallery" type="button" style="padding:0 15px; font-size:0.8rem;" id="btnGenerateRandomCode">Generar</button>
+                    </div>
+                </div>
+                
+                <div class="drop-zone" style="padding:15px; cursor:default; margin-bottom:15px;">
+                    <div id="adminDropZoneText" style="margin-bottom:12px; font-weight:bold; color:var(--azul-marino);">Seleccionar material finalizado</div>
+                    <div style="display:flex; gap:10px; justify-content:center;">
+                        <button type="button" class="btn-gallery" id="btnAdminSelectFiles" style="padding:8px 15px; font-size:0.8rem; border:1px solid var(--naranja);">📄 Archivos sueltos</button>
+                        <button type="button" class="btn-gallery" id="btnAdminSelectFolder" style="padding:8px 15px; font-size:0.8rem; border:1px solid var(--naranja);">📁 Subir Carpeta</button>
+                    </div>
+                </div>
+                
+                <input type="file" id="adminFileInput" hidden multiple>
+                <input type="file" id="adminFolderInput" hidden webkitdirectory directory allowdirs>
+                
+                <div class="simple-progress-container" id="adminProgressBox">
+                    <div class="fitness-status-txt" id="adminProgressTxt">Preparando carga... 0%</div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="adminProgressBarFill"></div>
+                    </div>
+                </div>
+                
+                <button class="btn-upload" id="btnAdminUploadFiles" style="background:var(--naranja);">🚀 Cargar Entrega del Proyecto</button>
             </div>
-            <div class="form-group">
-                <label>TEXTO O MENSAJE GENERAL</label>
-                <textarea id="adminPopupText" rows="2" placeholder="Escribe tu anuncio aquí..."></textarea>
+        </details>
+
+        <details style="background:#f8fafc; border:1px solid var(--borde); border-radius:12px; margin-bottom:20px; overflow:hidden;">
+            <summary style="padding:20px; font-weight:bold; color:var(--azul-marino); cursor:pointer; list-style:none; outline:none; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">👤 Editar Perfil de Presentación</h3>
+                <span>▾</span>
+            </summary>
+            <div style="padding: 0 20px 20px 20px; border-top:1px dashed var(--borde); margin-top:5px; padding-top:15px; cursor:default;">
+                <div class="form-group">
+                    <label>SUBIR TU FOTO (JPG / PNG)</label>
+                    <input type="file" id="adminPhotoInput" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>DESCRIPCIÓN PROFESIONAL</label>
+                    <textarea id="adminDescInput" rows="3">Productor audiovisual y diseñador gráfico. Especialista en la creación de interfaces minimalistas, identidad corporativa y edición cinematográfica de alta calidad.</textarea>
+                </div>
+                <button class="btn-upload" style="width:auto; padding:8px 20px;" id="btnSaveAdminProfile">Guardar Cambios de Perfil</button>
             </div>
-            <div class="form-group">
-                <label>ENLACE DE VIDEO (YOUTUBE EMBED)</label>
-                <input type="text" id="adminPopupVideo" placeholder="Ej. https://www.youtube.com/embed/XXXXXX">
+        </details>
+
+        <details style="background:#fffaf7; border:1px solid #ffe4d3; border-radius:12px; margin-bottom:20px; overflow:hidden;">
+            <summary style="padding:20px; font-weight:bold; color:var(--naranja); cursor:pointer; list-style:none; outline:none; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">📢 Configurar Ventana Emergente</h3>
+                <span>▾</span>
+            </summary>
+            <div style="padding: 0 20px 20px 20px; border-top:1px dashed var(--naranja); margin-top:5px; padding-top:15px; cursor:default;">
+                <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="adminPopupActive" checked style="width: 20px; height: 20px; cursor:pointer;">
+                    <label style="margin:0; font-size:0.9rem; color:var(--naranja);">Activar Comunicado</label>
+                </div>
+                <div class="form-group">
+                    <label>TÍTULO DEL POP-UP</label>
+                    <input type="text" id="adminPopupTitle" placeholder="Ej. ¡Novedades de la semana!">
+                </div>
+                <div class="form-group">
+                    <label>TEXTO O MENSAJE GENERAL</label>
+                    <textarea id="adminPopupText" rows="2" placeholder="Escribe tu anuncio aquí..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>ENLACE DE VIDEO (YOUTUBE EMBED)</label>
+                    <input type="text" id="adminPopupVideo" placeholder="Ej. https://www.youtube.com/embed/XXXXXX">
+                </div>
+                <div class="form-group">
+                    <label>IMAGEN (URL O CARGAR)</label>
+                    <input type="file" id="adminPopupImageInput" accept="image/*">
+                    <p style="font-size:0.7rem; color:#64748b; margin-top:4px;">Si subes una imagen, se mostrará en lugar del video (o junto a él).</p>
+                </div>
+                <button class="btn-main" style="width:auto; padding:8px 20px;" id="btnSavePopupConfig">Publicar Comunicado</button>
             </div>
-            <div class="form-group">
-                <label>IMAGEN (URL O CARGAR)</label>
-                <input type="file" id="adminPopupImageInput" accept="image/*">
-                <p style="font-size:0.7rem; color:#64748b; margin-top:4px;">Si subes una imagen, se mostrará en lugar del video (o junto a él).</p>
-            </div>
-            <button class="btn-main" style="width:auto; padding:8px 20px;" id="btnSavePopupConfig">Publicar Comunicado</button>
-        </div>
+        </details>
 
         <h3>Seguimiento Financiero y Monitor de Archivos</h3>
-        <div style="display:flex; gap:10px; margin-bottom:15px; align-items:center;">
-            <input type="text" id="tableFilterInput" placeholder="🔍 Filtrar por código de proyecto o nombre del cliente..." style="flex-grow:1; padding:10px; border:1px solid var(--borde); border-radius:8px;">
-            <button class="btn-upload" id="btnDeleteSelectedAdmin" style="background:#dc2626; width:auto; padding:10px 15px; font-size: 0.8rem; display:none;" onclick="eliminarMultiplesAdmin()">🗑️ Eliminar Seleccionados</button>
+        <div style="display:flex; gap:10px; margin-bottom:15px; align-items:center; flex-wrap:wrap;">
+            <input type="text" id="tableFilterInput" placeholder="🔍 Filtrar por código..." style="flex-grow:1; padding:10px; border:1px solid var(--borde); border-radius:8px;">
+            <button class="btn-upload" id="btnDownloadSelectedAdmin" style="background:var(--azul-marino); width:auto; padding:10px 15px; font-size: 0.8rem; display:none;" onclick="descargarMultiplesAdmin()">📥 Descargar</button>
+            <button class="btn-upload" id="btnDeleteSelectedAdmin" style="background:#dc2626; width:auto; padding:10px 15px; font-size: 0.8rem; display:none;" onclick="eliminarMultiplesAdmin()">🗑️ Eliminar</button>
         </div>
         
         <div class="admin-table-container" id="adminGroupedFilesContainer" style="border:none; background:transparent;"></div>
@@ -663,7 +687,7 @@
         }
     };
 
-    // Funciones globales para control múltiple
+    // Funciones globales para control múltiple (Cliente)
     window.toggleClientDownloadBtn = function() {
         const chks = document.querySelectorAll('.chk-client-download:checked');
         document.getElementById('btnDescargarSeleccionados').style.display = chks.length > 0 ? 'block' : 'none';
@@ -693,15 +717,18 @@
         }
     };
 
+    // Funciones globales para control múltiple (Admin)
     window.toggleAllAdmin = function(sourceCheckbox, groupKey) {
         const checkboxes = document.querySelectorAll('.chk-group-' + groupKey);
         checkboxes.forEach(chk => chk.checked = sourceCheckbox.checked);
-        window.toggleAdminDeleteBtn();
+        window.toggleAdminActionsBtn();
     };
 
-    window.toggleAdminDeleteBtn = function() {
+    window.toggleAdminActionsBtn = function() {
         const chks = document.querySelectorAll('.chk-admin-delete:checked');
-        document.getElementById('btnDeleteSelectedAdmin').style.display = chks.length > 0 ? 'block' : 'none';
+        const show = chks.length > 0;
+        document.getElementById('btnDeleteSelectedAdmin').style.display = show ? 'block' : 'none';
+        document.getElementById('btnDownloadSelectedAdmin').style.display = show ? 'block' : 'none';
     };
 
     window.eliminarMultiplesAdmin = async function() {
@@ -714,9 +741,36 @@
                 }
                 alert("Archivos eliminados exitosamente.");
                 document.getElementById('btnDeleteSelectedAdmin').style.display = 'none';
+                document.getElementById('btnDownloadSelectedAdmin').style.display = 'none';
                 renderizarTablaAdmin();
             } catch(e) {
                 alert("Error al eliminar archivos.");
+            }
+        }
+    };
+
+    window.descargarMultiplesAdmin = async function() {
+        const checkboxes = document.querySelectorAll('.chk-admin-delete:checked');
+        if(checkboxes.length === 0) return alert("Selecciona al menos un archivo.");
+        
+        alert(`Iniciando descarga de ${checkboxes.length} archivo(s). Las ventanas de descarga se abrirán enseguida.`);
+        
+        for (let chk of checkboxes) {
+            const url = chk.getAttribute('data-url');
+            const filename = chk.getAttribute('data-filename');
+            if(!url) continue;
+
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename || "archivo";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch(e) {
+                window.open(url, '_blank');
             }
         }
     };
@@ -993,6 +1047,8 @@
         document.getElementById(screenId).classList.add('active');
         localStorage.setItem('currentScreenDavid', screenId);
         if(screenId === 'screenAdmin') {
+            document.getElementById('btnDeleteSelectedAdmin').style.display = 'none';
+            document.getElementById('btnDownloadSelectedAdmin').style.display = 'none';
             renderizarTablaAdmin();
             renderAdminMatrixEditor('diseno');
         }
@@ -1731,6 +1787,7 @@
         const container = document.getElementById('adminGroupedFilesContainer');
         try {
             document.getElementById('btnDeleteSelectedAdmin').style.display = 'none';
+            document.getElementById('btnDownloadSelectedAdmin').style.display = 'none';
             const snapshot = await get(child(dRef(realDB), "proyectos"));
             container.innerHTML = '';
             
@@ -1791,7 +1848,9 @@
                         
                         tableHtml += `
                             <tr style="border-bottom: 1px dashed var(--borde);">
-                                <td style="padding: 8px;"><input type="checkbox" class="chk-admin-delete chk-group-${groupKey}" value="${item.dbKey}" onchange="window.toggleAdminDeleteBtn()"></td>
+                                <td style="padding: 8px;">
+                                    <input type="checkbox" class="chk-admin-delete chk-group-${groupKey}" value="${item.dbKey}" data-url="${item.urlDownload}" data-filename="${item.archivo}" onchange="window.toggleAdminActionsBtn()">
+                                </td>
                                 <td style="padding: 8px;">${badge}${badgeType}</td>
                                 <td style="padding: 8px;"><a href="#" onclick="abrirVistaPrevia('${item.urlDownload}', '${item.archivo}')" style="color:var(--azul-marino); font-weight:600; text-decoration:underline;">${item.archivo}</a></td>
                                 <td style="padding: 8px; color:#64748b;">${item.fecha || '-'}</td>
