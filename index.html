@@ -198,6 +198,8 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
+    <!-- MediaPipe para Fondo Borroso -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -314,6 +316,7 @@
                 </div>
 
                 <button class="btn-main" style="width:100%; margin-top:15px; font-size:0.95rem; box-sizing:border-box;" id="btnGoControl">🔐 Gestión de Archivos (Clientes)</button>
+                <button class="btn-main" style="width:100%; margin-top:10px; background:var(--azul-marino); font-size:0.95rem; box-sizing:border-box;" id="btnIrSalaReuniones">📹 Sala de Reuniones</button>
             </div>
 
             <div class="top-projects-area">
@@ -383,6 +386,41 @@
                 <div class="portfolio-card-name">Producción Audiovisual & Motion</div>
                 <div class="portfolio-card-link-text">Ver Canal de Video ↗</div>
             </a>
+        </div>
+    </div>
+
+    <div id="screenReunion" class="screen">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <h1 style="margin:0;">📹 Sala de Reuniones</h1>
+            <button class="btn-gallery" id="btnSalirSala" style="padding:8px 12px; font-size:0.8rem;">Salir</button>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+            <button class="btn-main" id="btnIniciarReunion" style="background: var(--azul-marino); width:100%;">📞 Llamar a Reunión (Activar Cámara)</button>
+            <button class="btn-gallery" id="btnCompartirPantalla" style="border: 1px solid var(--borde); width:100%; display: none;">🖥️ Compartir Pantalla / Diapositivas</button>
+        </div>
+
+        <!-- Área de Video Principal -->
+        <div id="areaSuperiorVideo" style="width: 100%; height: 350px; background: #000; border-radius: 14px; margin-bottom: 15px; display: none; justify-content: center; align-items: center; overflow: hidden; position: relative;">
+            <video id="videoCompartido" autoplay playsinline style="width: 100%; height: 100%; object-fit: contain;"></video>
+            <div style="position: absolute; top: 10px; left: 10px; background: rgba(10,37,64,0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">Presentación Principal</div>
+        </div>
+
+        <!-- Carrusel de Cámaras Inferior -->
+        <div id="carruselCamaras" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px;">
+            <!-- Mi Cámara -->
+            <div class="card-camara" id="contenedorMiCamara" style="min-width: 160px; max-width: 160px; height: 120px; background: #1e293b; border-radius: 10px; position: relative; overflow: hidden; display: none;">
+                <video id="miVideoLocal" autoplay playsinline muted style="display: none;"></video>
+                <canvas id="canvasMiVideo" width="160" height="120" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
+                <div style="position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;">Tú (Admin)</div>
+            </div>
+        </div>
+
+        <!-- Controles Multimedia -->
+        <div id="barraControlesMultimedia" style="display: none; gap: 10px; justify-content: center; flex-wrap: wrap; background: #f8fafc; padding: 15px; border-radius: 10px; border:1px solid var(--borde);">
+            <button id="btnMuteMic" style="background: var(--naranja); color: white; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; border:none; cursor:pointer;">🎤 Mutear Mic</button>
+            <button id="btnMuteCam" style="background: var(--naranja); color: white; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; border:none; cursor:pointer;">📷 Apagar Cámara</button>
+            <button id="btnToggleBlur" style="background: #475569; color: white; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; border:none; cursor:pointer;">✨ Fondo Borroso: OFF</button>
         </div>
     </div>
 
@@ -2049,6 +2087,188 @@
         }
     });
 
+    // --- LÓGICA DE SALA DE REUNIONES ---
+    let localStream = null;
+    let screenStream = null;
+    let isMicMuted = false;
+    let isCamOff = false;
+    let isBlurActive = false;
+    let selfieSegmentation = null;
+
+    if (window.SelfieSegmentation) {
+        selfieSegmentation = new window.SelfieSegmentation({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
+        });
+        selfieSegmentation.setOptions({ modelSelection: 1 });
+        selfieSegmentation.onResults(onSegmentResults);
+    }
+
+    const btnIrSala = document.getElementById('btnIrSalaReuniones');
+    const btnSalirSala = document.getElementById('btnSalirSala');
+    const btnIniciar = document.getElementById('btnIniciarReunion');
+    const btnCompartir = document.getElementById('btnCompartirPantalla');
+    const areaSuperior = document.getElementById('areaSuperiorVideo');
+    const videoCompartido = document.getElementById('videoCompartido');
+    const contenedorMiCamara = document.getElementById('contenedorMiCamara');
+    const miVideoLocal = document.getElementById('miVideoLocal');
+    const canvasMiVideo = document.getElementById('canvasMiVideo');
+    const barraControles = document.getElementById('barraControlesMultimedia');
+    let ctxCanvas = null;
+    if (canvasMiVideo) {
+        ctxCanvas = canvasMiVideo.getContext('2d');
+    }
+
+    if(btnIrSala) btnIrSala.addEventListener('click', () => attemptChangeScreen('screenReunion'));
+    if(btnSalirSala) {
+        btnSalirSala.addEventListener('click', () => {
+            if(localStream) btnIniciar.click(); // Stop if running
+            attemptChangeScreen('screenMain');
+        });
+    }
+
+    if(btnIniciar) {
+        btnIniciar.addEventListener('click', async () => {
+            if (!localStream) {
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 }, audio: true });
+                    miVideoLocal.srcObject = localStream;
+                    
+                    contenedorMiCamara.style.display = 'block';
+                    barraControles.style.display = 'flex';
+                    btnCompartir.style.display = 'block';
+                    btnIniciar.innerText = "❌ Finalizar Reunión";
+                    btnIniciar.style.background = "#dc2626";
+
+                    procesarCuadroVideo();
+                    simularConexionClientes();
+                } catch (err) {
+                    alert("No se pudo acceder a la cámara o micrófono. Verifica los permisos de tu navegador.");
+                }
+            } else {
+                localStream.getTracks().forEach(track => track.stop());
+                if(screenStream) screenStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+                screenStream = null;
+                contenedorMiCamara.style.display = 'none';
+                barraControles.style.display = 'none';
+                btnCompartir.style.display = 'none';
+                areaSuperior.style.display = 'none';
+                btnIniciar.innerText = "📞 Llamar a Reunión (Activar Cámara)";
+                btnIniciar.style.background = "var(--azul-marino)";
+                document.querySelectorAll('.client-cam-item').forEach(el => el.remove());
+            }
+        });
+    }
+
+    if(btnCompartir) {
+        btnCompartir.addEventListener('click', async () => {
+            if (!screenStream) {
+                try {
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                    videoCompartido.srcObject = screenStream;
+                    areaSuperior.style.display = 'flex';
+                    btnCompartir.innerText = "🛑 Detener Presentación";
+                    
+                    screenStream.getVideoTracks()[0].onended = () => {
+                        areaSuperior.style.display = 'none';
+                        btnCompartir.innerText = "🖥️ Compartir Pantalla / Diapositivas";
+                        screenStream = null;
+                    };
+                } catch (e) {
+                    console.log("Se canceló la captura de pantalla.");
+                }
+            } else {
+                screenStream.getTracks().forEach(track => track.stop());
+                screenStream = null;
+                areaSuperior.style.display = 'none';
+                btnCompartir.innerText = "🖥️ Compartir Pantalla / Diapositivas";
+            }
+        });
+    }
+
+    const btnMuteMic = document.getElementById('btnMuteMic');
+    if(btnMuteMic) {
+        btnMuteMic.addEventListener('click', () => {
+            if (localStream) {
+                isMicMuted = !isMicMuted;
+                localStream.getAudioTracks()[0].enabled = !isMicMuted;
+                btnMuteMic.innerText = isMicMuted ? "🎙️ Desmutear Mic" : "🎤 Mutear Mic";
+                btnMuteMic.style.background = isMicMuted ? "#475569" : "var(--naranja)";
+            }
+        });
+    }
+
+    const btnMuteCam = document.getElementById('btnMuteCam');
+    if(btnMuteCam) {
+        btnMuteCam.addEventListener('click', () => {
+            if (localStream) {
+                isCamOff = !isCamOff;
+                localStream.getVideoTracks()[0].enabled = !isCamOff;
+                btnMuteCam.innerText = isCamOff ? "📷 Activar Cámara" : "📷 Apagar Cámara";
+                btnMuteCam.style.background = isCamOff ? "#475569" : "var(--naranja)";
+            }
+        });
+    }
+
+    const btnToggleBlur = document.getElementById('btnToggleBlur');
+    if(btnToggleBlur) {
+        btnToggleBlur.addEventListener('click', () => {
+            isBlurActive = !isBlurActive;
+            btnToggleBlur.innerText = isBlurActive ? "✨ Fondo Borroso: ON" : "✨ Fondo Borroso: OFF";
+            btnToggleBlur.style.background = isBlurActive ? "var(--verde-whatsapp)" : "#475569";
+        });
+    }
+
+    async function procesarCuadroVideo() {
+        if (!localStream) return;
+
+        if (isCamOff) {
+            ctxCanvas.fillStyle = "#1e293b";
+            ctxCanvas.fillRect(0, 0, canvasMiVideo.width, canvasMiVideo.height);
+            requestAnimationFrame(procesarCuadroVideo);
+            return;
+        }
+        
+        if (isBlurActive && selfieSegmentation) {
+            await selfieSegmentation.send({ image: miVideoLocal });
+        } else {
+            ctxCanvas.drawImage(miVideoLocal, 0, 0, canvasMiVideo.width, canvasMiVideo.height);
+        }
+        requestAnimationFrame(procesarCuadroVideo);
+    }
+
+    function onSegmentResults(results) {
+        ctxCanvas.save();
+        ctxCanvas.clearRect(0, 0, canvasMiVideo.width, canvasMiVideo.height);
+        ctxCanvas.drawImage(results.segmentationMask, 0, 0, canvasMiVideo.width, canvasMiVideo.height);
+        ctxCanvas.globalCompositeOperation = 'source-in';
+        ctxCanvas.drawImage(results.image, 0, 0, canvasMiVideo.width, canvasMiVideo.height);
+        ctxCanvas.globalCompositeOperation = 'destination-over';
+        ctxCanvas.filter = 'blur(6px)';
+        ctxCanvas.drawImage(results.image, 0, 0, canvasMiVideo.width, canvasMiVideo.height);
+        ctxCanvas.restore();
+    }
+
+    function simularConexionClientes() {
+        const carrusel = document.getElementById('carruselCamaras');
+        const codigoEjemplo = activeClientValidatedCode || "DV26-" + Math.floor(1000 + Math.random() * 9000);
+        
+        setTimeout(() => {
+            if(!localStream) return;
+            const divCliente = document.createElement('div');
+            divCliente.className = 'card-camara client-cam-item';
+            divCliente.style = "min-width: 160px; max-width: 160px; height: 120px; background: #334155; border-radius: 10px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 2px solid var(--naranja); animation: fadeIn 0.3s ease-in-out;";
+            divCliente.innerHTML = `
+                <div style="text-align:center; color:#94a3b8;">
+                    <span style="font-size:1.5rem;">👤</span>
+                    <div style="font-size:0.65rem; font-weight:bold; color:white; margin-top:5px;">Cliente Conectado</div>
+                </div>
+                <div style="position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;">Código: ${codigoEjemplo}</div>
+            `;
+            carrusel.appendChild(divCliente);
+        }, 3000);
+    }
+    // --- FIN DE LÓGICA DE SALA DE REUNIONES ---
 </script>
 </body>
 </html>
