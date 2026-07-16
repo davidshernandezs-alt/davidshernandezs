@@ -198,7 +198,6 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
-    <!-- MediaPipe para Fondo Borroso -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -401,14 +400,12 @@
                 <button class="btn-main" id="btnSoyClienteRoom" style="background: var(--naranja); width:100%;">👥 Soy Cliente (Unirme a Sala)</button>
             </div>
             
-            <!-- Panel para David (Crear) -->
             <div id="adminRoomForm" style="display:none; margin-top:15px; background:#f8fafc; padding:15px; border-radius:10px; border:1px solid var(--borde);">
                 <label style="font-size:0.8rem; font-weight:bold; color:var(--azul-marino);">Código de Proyecto a habilitar (Máx 4 Clientes):</label>
                 <input type="text" id="adminInputRoomCode" placeholder="Ej. DV26-1234" style="text-transform:uppercase; margin-bottom:10px; width:100%; padding:10px; border:1px solid var(--borde); border-radius:6px; font-weight:bold; letter-spacing:1px; text-align:center;">
                 <button class="btn-main" id="btnIniciarReunionReal" style="background: var(--azul-marino); width:100%;">📹 Abrir Sala y Transmitir</button>
             </div>
 
-            <!-- Panel para Cliente (Unirse) -->
             <div id="clientRoomForm" style="display:none; margin-top:15px; background:#fffaf7; padding:15px; border-radius:10px; border:1px solid var(--naranja);">
                 <label style="font-size:0.8rem; font-weight:bold; color:var(--naranja);">Ingresa el código único para unirte a David:</label>
                 <input type="text" id="clientInputRoomCode" placeholder="Ej. DV26-1234" style="text-transform:uppercase; margin-bottom:10px; width:100%; padding:10px; border:1px solid var(--borde); border-radius:6px; font-weight:bold; letter-spacing:1px; text-align:center;">
@@ -420,15 +417,12 @@
             <button class="btn-gallery" id="btnCompartirPantalla" style="border: 1px solid var(--borde); width:100%; display: none;">🖥️ Compartir Pantalla (Solo PC)</button>
         </div>
 
-        <!-- Área de Video Principal -->
         <div id="areaSuperiorVideo" style="width: 100%; height: 350px; background: #000; border-radius: 14px; margin-bottom: 15px; display: none; justify-content: center; align-items: center; overflow: hidden; position: relative;">
             <video id="videoCompartido" autoplay playsinline style="width: 100%; height: 100%; object-fit: contain;"></video>
             <div style="position: absolute; top: 10px; left: 10px; background: rgba(10,37,64,0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">Presentación Principal</div>
         </div>
 
-        <!-- Carrusel de Cámaras Inferior -->
         <div id="carruselCamaras" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px;">
-            <!-- Mi Cámara -->
             <div class="card-camara" id="contenedorMiCamara" style="min-width: 160px; max-width: 160px; height: 120px; background: #1e293b; border-radius: 10px; position: relative; overflow: hidden; display: none;">
                 <video id="miVideoLocal" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
                 <canvas id="canvasMiVideo" width="160" height="120" style="width: 100%; height: 100%; object-fit: cover; display: none;"></canvas>
@@ -436,14 +430,12 @@
             </div>
         </div>
 
-        <!-- Controles Multimedia -->
         <div id="barraControlesMultimedia" style="display: none; gap: 10px; justify-content: center; flex-wrap: wrap; background: #f8fafc; padding: 15px; border-radius: 10px; border:1px solid var(--borde);">
             <button id="btnMuteMic" style="background: var(--naranja); color: white; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; border:none; cursor:pointer;">🎤 Mutear Mic</button>
             <button id="btnMuteCam" style="background: var(--naranja); color: white; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; border:none; cursor:pointer;">📷 Apagar Cámara</button>
             <button id="btnToggleBlur" style="background: #475569; color: white; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; border:none; cursor:pointer;">✨ Fondo Borroso: OFF</button>
         </div>
 
-        <!-- NUEVO: Panel de Chat -->
         <div id="panelChatReunion" style="display:none; flex-direction:column; background:#f8fafc; border:1px solid var(--borde); border-radius:10px; padding:15px; margin-top:15px; height:200px;">
             <div id="mensajesChat" style="flex-grow:1; overflow-y:auto; font-size:0.85rem; margin-bottom:10px; display:flex; flex-direction:column; gap:5px;"></div>
             <div style="display:flex; gap:10px;">
@@ -2225,20 +2217,57 @@
         }
     }
 
-    function mostrarVideoRemoto(stream, targetId, title) {
+    function mostrarVideoRemoto(stream, track, targetId, title) {
         let remoteContainer = document.getElementById('vid_' + targetId);
+        let vidElement = document.getElementById('media_' + targetId);
+
         if(!remoteContainer) {
             remoteContainer = document.createElement('div');
             remoteContainer.id = 'vid_' + targetId;
             remoteContainer.className = 'card-camara client-cam-item';
-            remoteContainer.style = "min-width: 160px; max-width: 160px; height: 120px; background: #1e293b; border-radius: 10px; position: relative; overflow: hidden; display: block; border: 2px solid var(--naranja); animation: fadeIn 0.3s ease-in-out;";
+            // Ajustamos la altura para hacer espacio al control de volumen
+            remoteContainer.style = "min-width: 170px; max-width: 170px; height: 160px; background: #1e293b; border-radius: 10px; position: relative; overflow: hidden; display: flex; flex-direction:column; border: 2px solid var(--naranja); animation: fadeIn 0.3s ease-in-out;";
+
+            // Interfaz de video + Control de volumen inferior
             remoteContainer.innerHTML = `
-                <video id="media_${targetId}" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-                <div style="position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;">${title}</div>
+                <div style="position:relative; width:100%; height:120px; flex-shrink: 0;">
+                    <video id="media_${targetId}" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                    <div style="position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; z-index: 10;">${title}</div>
+                </div>
+                <div style="background:#f8fafc; padding:5px 10px; display:flex; align-items:center; justify-content:space-between; gap:8px; height:40px; box-sizing:border-box;">
+                    <span style="font-size:0.8rem; color:var(--azul-marino);" id="icon_vol_${targetId}">🔊</span>
+                    <input type="range" id="vol_${targetId}" min="0" max="1" step="0.1" value="1" style="width:100%; cursor:pointer;">
+                </div>
             `;
             document.getElementById('carruselCamaras').appendChild(remoteContainer);
+
+            vidElement = document.getElementById('media_' + targetId);
+
+            // Lógica interactiva del volumen
+            const volSlider = document.getElementById('vol_' + targetId);
+            const volIcon = document.getElementById('icon_vol_' + targetId);
+            
+            volSlider.addEventListener('input', (e) => {
+                if(vidElement) {
+                    vidElement.volume = e.target.value;
+                    vidElement.muted = e.target.value == 0;
+                    volIcon.innerText = e.target.value == 0 ? "🔇" : "🔊";
+                }
+            });
         }
-        document.getElementById('media_' + targetId).srcObject = stream;
+
+        // Asignación segura del flujo de datos
+        if (stream) {
+            vidElement.srcObject = stream;
+        } else if (track) {
+            if (!vidElement.srcObject) vidElement.srcObject = new MediaStream();
+            vidElement.srcObject.addTrack(track);
+        }
+
+        // Forzar la reproducción para sortear el bloqueo de los navegadores
+        vidElement.onloadedmetadata = () => {
+            vidElement.play().catch(e => console.error("Autoplay bloqueado temporalmente por el navegador:", e));
+        };
     }
 
     function removerVideoRemoto(targetId) {
@@ -2253,11 +2282,15 @@
         }
         
         const pc = new RTCPeerConnection(servers);
+        pc.candidateQueue = []; // Inicializamos la cola de candidatos para evitar errores de timing
         peers[targetId] = pc;
 
         localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
 
-        pc.ontrack = (event) => { mostrarVideoRemoto(event.streams[0], targetId, userRole); };
+        // Actualizado para manejar de forma segura tanto el stream completo como tracks aislados
+        pc.ontrack = (event) => { 
+            mostrarVideoRemoto(event.streams[0], event.track, targetId, userRole); 
+        };
 
         pc.onicecandidate = (event) => {
             if(event.candidate) {
@@ -2285,6 +2318,14 @@
         return pc;
     }
 
+    // Función auxiliar para vaciar la cola de ICE candidates
+    function processCandidateQueue(pc) {
+        if(pc.candidateQueue && pc.candidateQueue.length > 0) {
+            pc.candidateQueue.forEach(c => pc.addIceCandidate(c).catch(e => console.error("Error ICE:", e)));
+            pc.candidateQueue = [];
+        }
+    }
+
     async function unirseASala(code, role) {
         roomCode = code;
         miRol = role;
@@ -2304,23 +2345,23 @@
         onChildAdded(dRef(realDB, `salas/${roomCode}/users`), (snap) => {
             const user = snap.val();
             if(user.id !== myId) {
-                // El usuario con ID alfanumérico menor es el que inicia la oferta para evitar duplicados
                 if (myId < user.id) {
                     createPeer(user.id, user.role, true);
                 }
             }
         });
 
-        // Escuchar señales
+        // Escuchar señales y manejar la cola de candidatos de forma segura
         onChildAdded(dRef(realDB, `salas/${roomCode}/signals`), (snap) => {
             const signal = snap.val();
             if(signal.to === myId) {
                 let pc = peers[signal.from];
+                
                 if(signal.type === 'offer') {
-                    // Fetch user role
                     get(child(dRef(realDB), `salas/${roomCode}/users/${signal.from}`)).then(uSnap => {
                         let remoteRole = uSnap.exists() ? uSnap.val().role : "Invitado";
                         if(!pc) pc = createPeer(signal.from, remoteRole, false);
+                        
                         if(pc) {
                             pc.setRemoteDescription(new RTCSessionDescription(signal.sdp))
                               .then(() => pc.createAnswer())
@@ -2329,13 +2370,27 @@
                                   push(dRef(realDB, `salas/${roomCode}/signals`), {
                                       from: myId, to: signal.from, type: 'answer', sdp: answer
                                   });
-                              });
+                              })
+                              .then(() => processCandidateQueue(pc)); // Procesar ICE en cola tras terminar el apretón de manos
                         }
                     });
                 } else if(signal.type === 'answer') {
-                    if(pc) pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+                    if(pc) {
+                        pc.setRemoteDescription(new RTCSessionDescription(signal.sdp))
+                          .then(() => processCandidateQueue(pc)); // Procesar ICE en cola tras aceptar la respuesta
+                    }
                 } else if(signal.type === 'candidate') {
-                    if(pc) pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+                    if(pc) {
+                        const cand = new RTCIceCandidate(signal.candidate);
+                        // Validamos si la descripción remota ya está lista
+                        if (pc.remoteDescription && pc.remoteDescription.type) {
+                            pc.addIceCandidate(cand).catch(e => console.error("Fallo al inyectar candidato:", e));
+                        } else {
+                            // Si aún se están presentando, guardamos el candidato en la cola
+                            if(!pc.candidateQueue) pc.candidateQueue = [];
+                            pc.candidateQueue.push(cand);
+                        }
+                    }
                 }
             }
         });
