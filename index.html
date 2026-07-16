@@ -397,27 +397,27 @@
 
         <div id="setupReunion" style="margin-bottom: 20px;">
             <div id="reunionAccionesIniciales" style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn-main" id="btnSoyAdminRoom" style="background: var(--azul-marino); width:100%;">👨‍💻 Soy David (Crear Sala para Cliente)</button>
+                <button class="btn-main" id="btnSoyAdminRoom" style="background: var(--azul-marino); width:100%;">👨‍💻 Soy David (Crear Sala para Clientes)</button>
                 <button class="btn-main" id="btnSoyClienteRoom" style="background: var(--naranja); width:100%;">👥 Soy Cliente (Unirme a Sala)</button>
             </div>
             
             <!-- Panel para David (Crear) -->
             <div id="adminRoomForm" style="display:none; margin-top:15px; background:#f8fafc; padding:15px; border-radius:10px; border:1px solid var(--borde);">
-                <label style="font-size:0.8rem; font-weight:bold; color:var(--azul-marino);">Código de Proyecto del cliente a atender:</label>
+                <label style="font-size:0.8rem; font-weight:bold; color:var(--azul-marino);">Código de Proyecto a habilitar (Máx 4 Clientes):</label>
                 <input type="text" id="adminInputRoomCode" placeholder="Ej. DV26-1234" style="text-transform:uppercase; margin-bottom:10px; width:100%; padding:10px; border:1px solid var(--borde); border-radius:6px; font-weight:bold; letter-spacing:1px; text-align:center;">
                 <button class="btn-main" id="btnIniciarReunionReal" style="background: var(--azul-marino); width:100%;">📹 Abrir Sala y Transmitir</button>
             </div>
 
             <!-- Panel para Cliente (Unirse) -->
             <div id="clientRoomForm" style="display:none; margin-top:15px; background:#fffaf7; padding:15px; border-radius:10px; border:1px solid var(--naranja);">
-                <label style="font-size:0.8rem; font-weight:bold; color:var(--naranja);">Ingresa tu código único para unirte a David:</label>
+                <label style="font-size:0.8rem; font-weight:bold; color:var(--naranja);">Ingresa el código único para unirte a David:</label>
                 <input type="text" id="clientInputRoomCode" placeholder="Ej. DV26-1234" style="text-transform:uppercase; margin-bottom:10px; width:100%; padding:10px; border:1px solid var(--borde); border-radius:6px; font-weight:bold; letter-spacing:1px; text-align:center;">
                 <button class="btn-main" id="btnUnirseReunionReal" style="background: var(--naranja); width:100%;">✅ Validar y Conectar</button>
             </div>
         </div>
 
         <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-            <button class="btn-gallery" id="btnCompartirPantalla" style="border: 1px solid var(--borde); width:100%; display: none;">🖥️ Compartir Pantalla / Diapositivas</button>
+            <button class="btn-gallery" id="btnCompartirPantalla" style="border: 1px solid var(--borde); width:100%; display: none;">🖥️ Compartir Pantalla (Solo PC)</button>
         </div>
 
         <!-- Área de Video Principal -->
@@ -430,8 +430,8 @@
         <div id="carruselCamaras" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px;">
             <!-- Mi Cámara -->
             <div class="card-camara" id="contenedorMiCamara" style="min-width: 160px; max-width: 160px; height: 120px; background: #1e293b; border-radius: 10px; position: relative; overflow: hidden; display: none;">
-                <video id="miVideoLocal" autoplay playsinline muted style="display: none;"></video>
-                <canvas id="canvasMiVideo" width="160" height="120" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
+                <video id="miVideoLocal" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+                <canvas id="canvasMiVideo" width="160" height="120" style="width: 100%; height: 100%; object-fit: cover; display: none;"></canvas>
                 <div id="labelMiCamara" style="position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;">Tú</div>
             </div>
         </div>
@@ -442,6 +442,16 @@
             <button id="btnMuteCam" style="background: var(--naranja); color: white; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; border:none; cursor:pointer;">📷 Apagar Cámara</button>
             <button id="btnToggleBlur" style="background: #475569; color: white; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; border:none; cursor:pointer;">✨ Fondo Borroso: OFF</button>
         </div>
+
+        <!-- NUEVO: Panel de Chat -->
+        <div id="panelChatReunion" style="display:none; flex-direction:column; background:#f8fafc; border:1px solid var(--borde); border-radius:10px; padding:15px; margin-top:15px; height:200px;">
+            <div id="mensajesChat" style="flex-grow:1; overflow-y:auto; font-size:0.85rem; margin-bottom:10px; display:flex; flex-direction:column; gap:5px;"></div>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="chatInputReunion" placeholder="Escribe un mensaje o pega un enlace..." style="flex-grow:1; padding:8px; border-radius:6px; border:1px solid var(--borde);">
+                <button id="btnEnviarChat" class="btn-main" style="padding:8px 15px;">Enviar</button>
+            </div>
+        </div>
+
     </div>
 
     <div id="screenControl" class="screen">
@@ -690,7 +700,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
     import { getStorage, ref as sRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
-    import { getDatabase, ref as dRef, set, get, child, remove, onValue, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+    import { getDatabase, ref as dRef, set, get, child, remove, onValue, push, onChildAdded, onDisconnect } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDmtI70sEjbB6k3tkgtVuSYHBclDh6tiLE",
@@ -2105,7 +2115,7 @@
         }
     });
 
-    // --- LÓGICA DE SALA DE REUNIONES CON WEBRTC REAL Y FIREBASE ---
+    // --- LÓGICA DE SALA DE REUNIONES MÚLTIPLE (MALLA WEBRTC) Y CHAT ---
     let localStream = null;
     let screenStream = null;
     let isMicMuted = false;
@@ -2113,9 +2123,11 @@
     let isBlurActive = false;
     let selfieSegmentation = null;
     
-    // Variables WebRTC
-    let peerConnection = null;
+    // Multi-Peer
+    let peers = {}; 
     let roomCode = "";
+    let myId = "usr_" + Math.random().toString(36).substr(2, 9);
+    let miRol = "";
     const servers = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }] };
 
     if (window.SelfieSegmentation) {
@@ -2136,6 +2148,8 @@
     const canvasMiVideo = document.getElementById('canvasMiVideo');
     const labelMiCamara = document.getElementById('labelMiCamara'); 
     const barraControles = document.getElementById('barraControlesMultimedia');
+    const panelChat = document.getElementById('panelChatReunion');
+
     let ctxCanvas = null;
     if (canvasMiVideo) {
         ctxCanvas = canvasMiVideo.getContext('2d');
@@ -2143,7 +2157,6 @@
 
     if(btnIrSala) btnIrSala.addEventListener('click', () => attemptChangeScreen('screenReunion'));
     
-    // Configuración Inicial de la UI de Sala
     document.getElementById('btnSoyAdminRoom').addEventListener('click', () => {
         document.getElementById('reunionAccionesIniciales').style.display = 'none';
         document.getElementById('adminRoomForm').style.display = 'block';
@@ -2157,36 +2170,28 @@
         }
     });
 
-    // Cierre y Limpieza Total de Sala
     if(btnSalirSala) {
         btnSalirSala.addEventListener('click', async () => {
-            if(localStream) {
-                localStream.getTracks().forEach(t => t.stop());
-                localStream = null;
-            }
-            if(screenStream) {
-                screenStream.getTracks().forEach(t => t.stop());
-                screenStream = null;
-            }
-            if(peerConnection) {
-                peerConnection.close();
-                peerConnection = null;
-            }
+            if(localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+            if(screenStream) { screenStream.getTracks().forEach(t => t.stop()); screenStream = null; }
             
-            // Limpiar datos de Firebase si somos Admin
+            for(let id in peers) { peers[id].close(); }
+            peers = {};
+            
             if(roomCode) {
-                await remove(dRef(realDB, 'salas/' + roomCode));
+                await remove(dRef(realDB, `salas/${roomCode}/users/${myId}`));
+                if(miRol === 'Admin') { await remove(dRef(realDB, `salas/${roomCode}`)); }
                 roomCode = "";
             }
 
-            // Restaurar UI
             contenedorMiCamara.style.display = 'none';
             barraControles.style.display = 'none';
             btnCompartir.style.display = 'none';
             areaSuperior.style.display = 'none';
+            panelChat.style.display = 'none';
+            document.getElementById('mensajesChat').innerHTML = '';
             
-            const remoteVid = document.getElementById('contenedorVideoRemoto');
-            if(remoteVid) remoteVid.remove();
+            document.querySelectorAll('.client-cam-item').forEach(el => el.remove());
 
             document.getElementById('reunionAccionesIniciales').style.display = 'flex';
             document.getElementById('adminRoomForm').style.display = 'none';
@@ -2198,16 +2203,19 @@
         });
     }
 
-    // Función auxiliar para iniciar cámara local
     async function startLocalStream(roleTitle) {
         try {
             localStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 }, audio: true });
             miVideoLocal.srcObject = localStream;
             
+            // Fix Cámara negra: nos aseguramos que el video inicie
+            miVideoLocal.onloadedmetadata = () => { miVideoLocal.play(); };
+
             contenedorMiCamara.style.display = 'block';
             labelMiCamara.innerText = `Tú (${roleTitle})`;
             barraControles.style.display = 'flex';
             btnCompartir.style.display = 'block';
+            panelChat.style.display = 'flex';
 
             procesarCuadroVideo();
             return true;
@@ -2217,133 +2225,170 @@
         }
     }
 
-    // Función para anclar el video remoto en el carrusel
-    function mostrarVideoRemoto(stream, title) {
-        let remoteContainer = document.getElementById('contenedorVideoRemoto');
+    function mostrarVideoRemoto(stream, targetId, title) {
+        let remoteContainer = document.getElementById('vid_' + targetId);
         if(!remoteContainer) {
             remoteContainer = document.createElement('div');
-            remoteContainer.id = 'contenedorVideoRemoto';
-            remoteContainer.className = 'card-camara';
+            remoteContainer.id = 'vid_' + targetId;
+            remoteContainer.className = 'card-camara client-cam-item';
             remoteContainer.style = "min-width: 160px; max-width: 160px; height: 120px; background: #1e293b; border-radius: 10px; position: relative; overflow: hidden; display: block; border: 2px solid var(--naranja); animation: fadeIn 0.3s ease-in-out;";
             remoteContainer.innerHTML = `
-                <video id="videoRemotoRTC" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                <video id="media_${targetId}" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
                 <div style="position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;">${title}</div>
             `;
             document.getElementById('carruselCamaras').appendChild(remoteContainer);
         }
-        document.getElementById('videoRemotoRTC').srcObject = stream;
+        document.getElementById('media_' + targetId).srcObject = stream;
     }
 
-    // CREAR SALA (ADMIN)
-    document.getElementById('btnIniciarReunionReal').addEventListener('click', async () => {
-        const code = document.getElementById('adminInputRoomCode').value.trim().toUpperCase();
-        if (!code) return alert("Ingresa el código del proyecto del cliente a atender.");
-        roomCode = code;
+    function removerVideoRemoto(targetId) {
+        const el = document.getElementById('vid_' + targetId);
+        if(el) el.remove();
+    }
+
+    // Lógica WebRTC en Malla
+    function createPeer(targetId, userRole, isInitiator) {
+        if(Object.keys(peers).length >= 4) {
+            console.log("Sala llena"); return null;
+        }
         
-        const cameraStarted = await startLocalStream('Admin');
+        const pc = new RTCPeerConnection(servers);
+        peers[targetId] = pc;
+
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+        pc.ontrack = (event) => { mostrarVideoRemoto(event.streams[0], targetId, userRole); };
+
+        pc.onicecandidate = (event) => {
+            if(event.candidate) {
+                push(dRef(realDB, `salas/${roomCode}/signals`), {
+                    from: myId, to: targetId, type: 'candidate', candidate: event.candidate.toJSON()
+                });
+            }
+        };
+
+        pc.oniceconnectionstatechange = () => {
+            if(pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
+                removerVideoRemoto(targetId);
+                delete peers[targetId];
+            }
+        };
+
+        if(isInitiator) {
+            pc.createOffer().then(offer => {
+                pc.setLocalDescription(offer);
+                push(dRef(realDB, `salas/${roomCode}/signals`), {
+                    from: myId, to: targetId, type: 'offer', sdp: offer
+                });
+            });
+        }
+        return pc;
+    }
+
+    async function unirseASala(code, role) {
+        roomCode = code;
+        miRol = role;
+        
+        const cameraStarted = await startLocalStream(role);
         if(!cameraStarted) return;
         
         document.getElementById('adminRoomForm').style.display = 'none';
-
-        // Lógica WebRTC Caller (Ofrece conexión)
-        const roomRef = dRef(realDB, `salas/${roomCode}`);
-        await remove(roomRef); // Limpiar sala previa
-        
-        peerConnection = new RTCPeerConnection(servers);
-        
-        localStream.getTracks().forEach(track => {
-            peerConnection.addTrack(track, localStream);
-        });
-
-        peerConnection.ontrack = (event) => {
-            mostrarVideoRemoto(event.streams[0], "Cliente Conectado");
-        };
-
-        peerConnection.onicecandidate = (event) => {
-            if (event.candidate) {
-                push(child(roomRef, 'callerCandidates'), event.candidate.toJSON());
-            }
-        };
-
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-
-        await set(child(roomRef, 'offer'), {
-            type: offer.type,
-            sdp: offer.sdp
-        });
-
-        onValue(child(roomRef, 'answer'), (snapshot) => {
-            const data = snapshot.val();
-            if (data && !peerConnection.currentRemoteDescription) {
-                const answerDescription = new RTCSessionDescription(data);
-                peerConnection.setRemoteDescription(answerDescription);
-            }
-        });
-
-        onChildAdded(child(roomRef, 'calleeCandidates'), (data) => {
-            if (data.val()) {
-                const candidate = new RTCIceCandidate(data.val());
-                peerConnection.addIceCandidate(candidate);
-            }
-        });
-    });
-
-    // UNIRSE A SALA (CLIENTE)
-    document.getElementById('btnUnirseReunionReal').addEventListener('click', async () => {
-        const code = document.getElementById('clientInputRoomCode').value.trim().toUpperCase();
-        if (!code) return alert("Ingresa tu código único de proyecto para unirte.");
-        roomCode = code;
-        
-        // Verificar si la sala existe en Firebase
-        const roomRef = dRef(realDB, `salas/${roomCode}`);
-        const roomSnap = await get(child(roomRef, 'offer'));
-        if (!roomSnap.exists()) {
-            return alert("La sala no ha sido abierta por David aún. Verifica el código o espera unos minutos a que él te envíe el enlace.");
-        }
-
-        const cameraStarted = await startLocalStream('Cliente');
-        if(!cameraStarted) return;
-        
         document.getElementById('clientRoomForm').style.display = 'none';
 
-        // Lógica WebRTC Callee (Responde conexión)
-        peerConnection = new RTCPeerConnection(servers);
-        
-        localStream.getTracks().forEach(track => {
-            peerConnection.addTrack(track, localStream);
-        });
+        // Registro de usuario
+        const myUserRef = dRef(realDB, `salas/${roomCode}/users/${myId}`);
+        await set(myUserRef, { id: myId, role: miRol });
+        onDisconnect(myUserRef).remove();
 
-        peerConnection.ontrack = (event) => {
-            mostrarVideoRemoto(event.streams[0], "David (Host)");
-        };
-
-        peerConnection.onicecandidate = (event) => {
-            if (event.candidate) {
-                push(child(roomRef, 'calleeCandidates'), event.candidate.toJSON());
+        // Escuchar nuevos usuarios
+        onChildAdded(dRef(realDB, `salas/${roomCode}/users`), (snap) => {
+            const user = snap.val();
+            if(user.id !== myId) {
+                // El usuario con ID alfanumérico menor es el que inicia la oferta para evitar duplicados
+                if (myId < user.id) {
+                    createPeer(user.id, user.role, true);
+                }
             }
-        };
-
-        const offerData = roomSnap.val();
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(offerData));
-
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-
-        await set(child(roomRef, 'answer'), {
-            type: answer.type,
-            sdp: answer.sdp
         });
 
-        onChildAdded(child(roomRef, 'callerCandidates'), (data) => {
-            if (data.val()) {
-                const candidate = new RTCIceCandidate(data.val());
-                peerConnection.addIceCandidate(candidate);
+        // Escuchar señales
+        onChildAdded(dRef(realDB, `salas/${roomCode}/signals`), (snap) => {
+            const signal = snap.val();
+            if(signal.to === myId) {
+                let pc = peers[signal.from];
+                if(signal.type === 'offer') {
+                    // Fetch user role
+                    get(child(dRef(realDB), `salas/${roomCode}/users/${signal.from}`)).then(uSnap => {
+                        let remoteRole = uSnap.exists() ? uSnap.val().role : "Invitado";
+                        if(!pc) pc = createPeer(signal.from, remoteRole, false);
+                        if(pc) {
+                            pc.setRemoteDescription(new RTCSessionDescription(signal.sdp))
+                              .then(() => pc.createAnswer())
+                              .then(answer => {
+                                  pc.setLocalDescription(answer);
+                                  push(dRef(realDB, `salas/${roomCode}/signals`), {
+                                      from: myId, to: signal.from, type: 'answer', sdp: answer
+                                  });
+                              });
+                        }
+                    });
+                } else if(signal.type === 'answer') {
+                    if(pc) pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+                } else if(signal.type === 'candidate') {
+                    if(pc) pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+                }
+            }
+        });
+
+        // Lógica del Chat en vivo
+        onChildAdded(dRef(realDB, `salas/${roomCode}/chat`), (snap) => {
+            const msg = snap.val();
+            const chatBox = document.getElementById('mensajesChat');
+            
+            let colorNombre = msg.sender === 'Admin' ? 'var(--naranja)' : 'var(--azul-marino)';
+            
+            chatBox.innerHTML += `<div style="margin-bottom:6px; padding:6px; background:#fff; border-radius:6px; border:1px solid var(--borde);">
+                <strong style="color:${colorNombre}; font-size:0.75rem;">${msg.sender}:</strong> 
+                <span style="color:#334155;">${msg.text}</span>
+            </div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    }
+
+    document.getElementById('btnIniciarReunionReal').addEventListener('click', async () => {
+        const code = document.getElementById('adminInputRoomCode').value.trim().toUpperCase();
+        if (!code) return alert("Ingresa el código del proyecto del cliente a atender.");
+        // Limpiamos la sala previamente por si quedó pegada
+        await remove(dRef(realDB, `salas/${code}`));
+        unirseASala(code, 'Admin');
+    });
+
+    document.getElementById('btnUnirseReunionReal').addEventListener('click', () => {
+        const code = document.getElementById('clientInputRoomCode').value.trim().toUpperCase();
+        if (!code) return alert("Ingresa tu código único de proyecto para unirte.");
+        
+        get(child(dRef(realDB), `salas/${code}`)).then(snap => {
+            if(!snap.exists()) {
+                alert("La sala no ha sido abierta por David aún. Verifica el código o espera a que él te envíe el aviso.");
+            } else {
+                unirseASala(code, 'Cliente');
             }
         });
     });
 
-    // COMPARTIR PANTALLA
+    // Enviar Chat
+    document.getElementById('btnEnviarChat').addEventListener('click', () => {
+        const text = document.getElementById('chatInputReunion').value.trim();
+        if(!text) return;
+        push(dRef(realDB, `salas/${roomCode}/chat`), {
+            sender: miRol, text: text, time: Date.now()
+        });
+        document.getElementById('chatInputReunion').value = '';
+    });
+    document.getElementById('chatInputReunion').addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') document.getElementById('btnEnviarChat').click();
+    });
+
     if(btnCompartir) {
         btnCompartir.addEventListener('click', async () => {
             if (!screenStream) {
@@ -2353,20 +2398,9 @@
                     areaSuperior.style.display = 'flex';
                     btnCompartir.innerText = "🛑 Detener Presentación";
                     
-                    // Aquí se podría reemplazar el track de video de la cámara por el de la pantalla en WebRTC:
-                    // if(peerConnection) {
-                    //    const videoSender = peerConnection.getSenders().find(s => s.track.kind === 'video');
-                    //    videoSender.replaceTrack(screenStream.getVideoTracks()[0]);
-                    // }
-
                     screenStream.getVideoTracks()[0].onended = () => {
                         areaSuperior.style.display = 'none';
-                        btnCompartir.innerText = "🖥️ Compartir Pantalla / Diapositivas";
-                        // Restaurar track original
-                        // if(peerConnection) {
-                        //    const videoSender = peerConnection.getSenders().find(s => s.track.kind === 'video');
-                        //    videoSender.replaceTrack(localStream.getVideoTracks()[0]);
-                        // }
+                        btnCompartir.innerText = "🖥️ Compartir Pantalla (Solo PC)";
                         screenStream = null;
                     };
                 } catch (e) {
@@ -2376,7 +2410,7 @@
                 screenStream.getTracks().forEach(track => track.stop());
                 screenStream = null;
                 areaSuperior.style.display = 'none';
-                btnCompartir.innerText = "🖥️ Compartir Pantalla / Diapositivas";
+                btnCompartir.innerText = "🖥️ Compartir Pantalla (Solo PC)";
             }
         });
     }
@@ -2417,18 +2451,28 @@
     async function procesarCuadroVideo() {
         if (!localStream) return;
 
+        // Si la cámara está apagada, ocultamos el video nativo y mostramos un lienzo negro
         if (isCamOff) {
+            miVideoLocal.style.display = 'none';
+            canvasMiVideo.style.display = 'block';
             ctxCanvas.fillStyle = "#1e293b";
             ctxCanvas.fillRect(0, 0, canvasMiVideo.width, canvasMiVideo.height);
             requestAnimationFrame(procesarCuadroVideo);
             return;
         }
         
+        // Si el blur está encendido, procesamos con mediapipe y dibujamos en el lienzo
         if (isBlurActive && selfieSegmentation) {
+            miVideoLocal.style.display = 'none';
+            canvasMiVideo.style.display = 'block';
             await selfieSegmentation.send({ image: miVideoLocal });
         } else {
-            ctxCanvas.drawImage(miVideoLocal, 0, 0, canvasMiVideo.width, canvasMiVideo.height);
+            // FIX: Si el blur está apagado, mostramos directamente el video nativo.
+            // Esto repara el problema de la cámara negra en PC.
+            miVideoLocal.style.display = 'block';
+            canvasMiVideo.style.display = 'none';
         }
+        
         requestAnimationFrame(procesarCuadroVideo);
     }
 
@@ -2443,7 +2487,6 @@
         ctxCanvas.drawImage(results.image, 0, 0, canvasMiVideo.width, canvasMiVideo.height);
         ctxCanvas.restore();
     }
-    // --- FIN DE LÓGICA DE SALA DE REUNIONES CON WEBRTC REAL ---
 </script>
 </body>
 </html>
