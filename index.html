@@ -2120,6 +2120,7 @@ Revisa la tabla inferior para más detalles.`);
     // --- LÓGICA DE SALA DE REUNIONES CON WEBRTC REAL Y FIREBASE ---
     let localStream = null;
     let screenStream = null;
+    let canvasStream = null;
     let isMicMuted = false;
     let isCamOff = false;
     let isBlurActive = false;
@@ -2200,6 +2201,10 @@ Revisa la tabla inferior para más detalles.`);
                 localStream.getTracks().forEach(t => t.stop());
                 localStream = null;
             }
+            if(canvasStream) {
+                canvasStream.getTracks().forEach(t => t.stop());
+                canvasStream = null;
+            }
             if(screenStream) {
                 screenStream.getTracks().forEach(t => t.stop());
                 screenStream = null;
@@ -2246,6 +2251,9 @@ Revisa la tabla inferior para más detalles.`);
             localStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 }, audio: true });
             miVideoLocal.srcObject = localStream;
             
+            // Extraer el stream procesado visualmente (borroso) del Canvas
+            canvasStream = canvasMiVideo.captureStream(30);
+            
             contenedorMiCamara.style.display = 'block';
             labelMiCamara.innerText = `Tú (${roleTitle})`;
             barraControles.style.display = 'flex';
@@ -2282,9 +2290,13 @@ Revisa la tabla inferior para más detalles.`);
         peerConnection = new RTCPeerConnection(servers);
         listenForScreenShare(roomRef);
         
-        localStream.getTracks().forEach(track => {
-            peerConnection.addTrack(track, localStream);
-        });
+        // Enviar el video procesado (canvas) y el audio original
+        if (canvasStream && canvasStream.getVideoTracks().length > 0) {
+            peerConnection.addTrack(canvasStream.getVideoTracks()[0], localStream);
+        }
+        if (localStream && localStream.getAudioTracks().length > 0) {
+            peerConnection.addTrack(localStream.getAudioTracks()[0], localStream);
+        }
 
         peerConnection.ontrack = (event) => {
             currentRemoteStream = event.streams[0];
@@ -2356,9 +2368,13 @@ Revisa la tabla inferior para más detalles.`);
         peerConnection = new RTCPeerConnection(servers);
         listenForScreenShare(roomRef);
         
-        localStream.getTracks().forEach(track => {
-            peerConnection.addTrack(track, localStream);
-        });
+        // Enviar el video procesado (canvas) y el audio original
+        if (canvasStream && canvasStream.getVideoTracks().length > 0) {
+            peerConnection.addTrack(canvasStream.getVideoTracks()[0], localStream);
+        }
+        if (localStream && localStream.getAudioTracks().length > 0) {
+            peerConnection.addTrack(localStream.getAudioTracks()[0], localStream);
+        }
 
         peerConnection.ontrack = (event) => {
             currentRemoteStream = event.streams[0];
@@ -2411,10 +2427,10 @@ Revisa la tabla inferior para más detalles.`);
         
         btnCompartir.innerText = "🖥️ Compartir Pantalla / Diapositivas";
         
-        // RESTAURAR CAMARA ORIGINAL AL OTRO USUARIO
-        if(peerConnection && localStream) {
+        // RESTAURAR CAMARA ORIGINAL (CON EFECTOS) AL OTRO USUARIO
+        if(peerConnection && canvasStream) {
            const videoSender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
-           if (videoSender) videoSender.replaceTrack(localStream.getVideoTracks()[0]);
+           if (videoSender) videoSender.replaceTrack(canvasStream.getVideoTracks()[0]);
         }
 
         // AVISAR A FIREBASE PARA REACOMODAR LA INTERFAZ
