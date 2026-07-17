@@ -1,15 +1,4 @@
 <!DOCTYPE html>
-<html lang="en">
-
-  <head>
-    <meta charset="UTF-8">
-    <title>REV</title>
-    
-
-  </head>
-    
-  <body>
-  <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -431,10 +420,10 @@
             <button class="btn-gallery" id="btnCompartirPantalla" style="border: 1px solid var(--borde); width:100%; display: none;">🖥️ Compartir Pantalla / Diapositivas</button>
         </div>
 
-        <!-- Área de Video Principal -->
+        <!-- Área de Video Principal (AHORA SE MUESTRA SIEMPRE PARA VER AL OTRO) -->
         <div id="areaSuperiorVideo" style="width: 100%; height: 350px; background: #000; border-radius: 14px; margin-bottom: 15px; display: none; justify-content: center; align-items: center; overflow: hidden; position: relative;">
             <video id="videoCompartido" autoplay playsinline style="width: 100%; height: 100%; object-fit: contain;"></video>
-            <div style="position: absolute; top: 10px; left: 10px; background: rgba(10,37,64,0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">Presentación Principal</div>
+            <div id="labelVideoPrincipal" style="position: absolute; top: 10px; left: 10px; background: rgba(10,37,64,0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">Cámara Principal</div>
         </div>
 
         <!-- Carrusel de Cámaras Inferior -->
@@ -445,6 +434,8 @@
                 <canvas id="canvasMiVideo" width="160" height="120" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
                 <div id="labelMiCamara" style="position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;">Tú</div>
             </div>
+            
+            <!-- EL VIDEO REMOTO AHORA SE AÑADE AQUÍ DINÁMICAMENTE SOLO COMO BACKUP O SI SON MAS PERSONAS, PERO EL PRINCIPAL ES AREA SUPERIOR -->
         </div>
 
         <!-- Controles Multimedia -->
@@ -913,7 +904,7 @@
         let saludoPorHora = "buenos días";
         if(horaActual >= 12 && horaActual < 19) saludoPorHora = "buenas tardes";
         else if(horaActual >= 19) saludoPorHora = "buenas noches";
-        const esSaludo = query.match(/\b(hola|buenas|saludos|buenos d[íi]as|buenas tardes|buenas noches)\b/i);
+        const esSaludo = query.match(/ (hola|buenas|saludos|buenos d[íi]as|buenas tardes|buenas noches) /i);
 
         const codeRegex = /(dv26-\d{4})/i;
         if (codeRegex.test(query)) {
@@ -936,7 +927,7 @@
             return;
         }
 
-        const pagoRegex = /\b(pago|pagar|métodos|metodos|paypal|binance|zelle|precio|costo|pagos)\b/i;
+        const pagoRegex = / (pago|pagar|métodos|metodos|paypal|binance|zelle|precio|costo|pagos) /i;
         if (pagoRegex.test(query) && !query.includes("logo") && !query.includes("video")) {
             const msgPago = `Para tu comodidad, aceptamos varias plataformas: PayPal 🔵, Binance Pay 🟡 y métodos locales (Zelle/Pago Móvil) 🟢. ¿Quieres cotizar un servicio o ya tienes un código de proyecto para realizar tu pago?`;
             aiBox.innerText = msgPago; decir(msgPago);
@@ -1183,7 +1174,8 @@
         if (totalNotifAdmin > 0) {
             const msg = `Atención. Han cargado material. Hay un total de ${totalNotifAdmin} archivos pendientes de clientes. El último corresponde a ${ultimoRemitenteAdmin}.`;
             decir(msg);
-            alert(`Archivos subidos por clientes: ${totalNotifAdmin}\nRevisa la tabla inferior para más detalles.`);
+            alert(`Archivos subidos por clientes: ${totalNotifAdmin}
+Revisa la tabla inferior para más detalles.`);
         } else {
             decir("No tienes entregas pendientes.");
             alert("No hay archivos nuevos de clientes.");
@@ -1396,9 +1388,18 @@
                 const destinoDavid = "584120000000"; 
                 let detalleProyecto = orderData.modalidad === "Individual" ? `Diseño Individual: ${orderData.itemsSeleccionados.join(' + ')}` : `${orderData.planEscogido}`;
                 
-                let notaCliente = orderData.detallesProyecto ? `\n💡 Detalles del Cliente: ${orderData.detallesProyecto}` : "";
+                let notaCliente = orderData.detallesProyecto ? `
+💡 Detalles del Cliente: ${orderData.detallesProyecto}` : "";
                 
-                const mensajeCompleto = `NUEVO PROYECTO REGISTRADO\n🔑 Código Único: ${orderData.codigoUnico}\n👤 Cliente: ${orderData.nombreCliente}\n📞 Contacto: ${orderData.telefonoCliente}\n📋 Modalidad: ${orderData.modalidad}\n🛠️ Detalle: ${detalleProyecto}${notaCliente}\n💰 Inversión Total: $${orderData.totalInversion}\n📉 Enganche: ${orderData.metricaEnganche}\n🗓️ Esquema: ${orderData.esquemaPago}`;
+                const mensajeCompleto = `NUEVO PROYECTO REGISTRADO
+🔑 Código Único: ${orderData.codigoUnico}
+👤 Cliente: ${orderData.nombreCliente}
+📞 Contacto: ${orderData.telefonoCliente}
+📋 Modalidad: ${orderData.modalidad}
+🛠️ Detalle: ${detalleProyecto}${notaCliente}
+💰 Inversión Total: $${orderData.totalInversion}
+📉 Enganche: ${orderData.metricaEnganche}
+🗓️ Esquema: ${orderData.esquemaPago}`;
                 
                 window.open(`https://api.whatsapp.com/send?phone=${destinoDavid}&text=${encodeURIComponent(mensajeCompleto)}`, '_blank');
             });
@@ -2123,6 +2124,8 @@
     let isCamOff = false;
     let isBlurActive = false;
     let selfieSegmentation = null;
+    let myRole = '';
+    let currentRemoteStream = null;
     
     // Variables WebRTC
     let peerConnection = null;
@@ -2154,6 +2157,28 @@
 
     if(btnIrSala) btnIrSala.addEventListener('click', () => attemptChangeScreen('screenReunion'));
     
+    // Sincronizar el estado de compartir pantalla vía Firebase
+    function listenForScreenShare(roomRef) {
+        onValue(child(roomRef, 'screenShare'), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                if (data.active && data.by !== myRole && currentRemoteStream) {
+                    // El otro usuario está compartiendo pantalla
+                    videoCompartido.srcObject = currentRemoteStream;
+                    // Ya no ocultamos/mostramos areaSuperior aquí, porque siempre está visible.
+                    // Solo actualizamos el label para indicar que es pantalla compartida
+                    document.getElementById('labelVideoPrincipal').innerText = `Pantalla compartida de ${data.by}`;
+                } else if (!data.active && data.by !== myRole) {
+                    // El otro usuario detuvo la pantalla. Restauramos la cámara del otro usuario en el área grande.
+                    if (currentRemoteStream) {
+                        videoCompartido.srcObject = currentRemoteStream;
+                        document.getElementById('labelVideoPrincipal').innerText = `Cámara de ${data.by === 'Admin' ? 'David (Host)' : 'Cliente'}`;
+                    }
+                }
+            }
+        });
+    }
+
     // Configuración Inicial de la UI de Sala
     document.getElementById('btnSoyAdminRoom').addEventListener('click', () => {
         document.getElementById('reunionAccionesIniciales').style.display = 'none';
@@ -2190,12 +2215,18 @@
                 roomCode = "";
             }
 
+            myRole = '';
+            currentRemoteStream = null;
+
             // Restaurar UI
             contenedorMiCamara.style.display = 'none';
             barraControles.style.display = 'none';
             btnCompartir.style.display = 'none';
             areaSuperior.style.display = 'none';
+            videoCompartido.srcObject = null;
             
+            // El contenedor dinámico en el carrusel ya no debería existir en esta lógica,
+            // pero lo removemos por si acaso quedó algún residuo
             const remoteVid = document.getElementById('contenedorVideoRemoto');
             if(remoteVid) remoteVid.remove();
 
@@ -2219,6 +2250,10 @@
             labelMiCamara.innerText = `Tú (${roleTitle})`;
             barraControles.style.display = 'flex';
             btnCompartir.style.display = 'block';
+            
+            // Habilitar área de video principal temporalmente con un texto de espera
+            areaSuperior.style.display = 'flex';
+            document.getElementById('labelVideoPrincipal').innerText = "Esperando a la otra persona...";
 
             procesarCuadroVideo();
             return true;
@@ -2228,28 +2263,12 @@
         }
     }
 
-    // Función para anclar el video remoto en el carrusel
-    function mostrarVideoRemoto(stream, title) {
-        let remoteContainer = document.getElementById('contenedorVideoRemoto');
-        if(!remoteContainer) {
-            remoteContainer = document.createElement('div');
-            remoteContainer.id = 'contenedorVideoRemoto';
-            remoteContainer.className = 'card-camara';
-            remoteContainer.style = "min-width: 160px; max-width: 160px; height: 120px; background: #1e293b; border-radius: 10px; position: relative; overflow: hidden; display: block; border: 2px solid var(--naranja); animation: fadeIn 0.3s ease-in-out;";
-            remoteContainer.innerHTML = `
-                <video id="videoRemotoRTC" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-                <div style="position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;">${title}</div>
-            `;
-            document.getElementById('carruselCamaras').appendChild(remoteContainer);
-        }
-        document.getElementById('videoRemotoRTC').srcObject = stream;
-    }
-
     // CREAR SALA (ADMIN)
     document.getElementById('btnIniciarReunionReal').addEventListener('click', async () => {
         const code = document.getElementById('adminInputRoomCode').value.trim().toUpperCase();
         if (!code) return alert("Ingresa el código del proyecto del cliente a atender.");
         roomCode = code;
+        myRole = 'Admin';
         
         const cameraStarted = await startLocalStream('Admin');
         if(!cameraStarted) return;
@@ -2261,13 +2280,27 @@
         await remove(roomRef); // Limpiar sala previa
         
         peerConnection = new RTCPeerConnection(servers);
+        listenForScreenShare(roomRef);
         
         localStream.getTracks().forEach(track => {
             peerConnection.addTrack(track, localStream);
         });
 
         peerConnection.ontrack = (event) => {
-            mostrarVideoRemoto(event.streams[0], "Cliente Conectado");
+            currentRemoteStream = event.streams[0];
+            
+            // EN LUGAR DE AÑADIRLO AL CARRUSEL, LO PONEMOS EN EL ÁREA SUPERIOR (GRANDE)
+            videoCompartido.srcObject = currentRemoteStream;
+            document.getElementById('labelVideoPrincipal').innerText = "Cliente Conectado";
+
+            // Refrescar en caso de que ya estuviera compartiendo
+            get(child(dRef(realDB), `salas/${roomCode}/screenShare`)).then(snap => {
+                const data = snap.val();
+                if (data && data.active && data.by !== myRole) {
+                    videoCompartido.srcObject = currentRemoteStream;
+                    document.getElementById('labelVideoPrincipal').innerText = `Pantalla compartida de Cliente`;
+                }
+            });
         };
 
         peerConnection.onicecandidate = (event) => {
@@ -2305,6 +2338,7 @@
         const code = document.getElementById('clientInputRoomCode').value.trim().toUpperCase();
         if (!code) return alert("Ingresa tu código único de proyecto para unirte.");
         roomCode = code;
+        myRole = 'Cliente';
         
         // Verificar si la sala existe en Firebase
         const roomRef = dRef(realDB, `salas/${roomCode}`);
@@ -2320,13 +2354,27 @@
 
         // Lógica WebRTC Callee (Responde conexión)
         peerConnection = new RTCPeerConnection(servers);
+        listenForScreenShare(roomRef);
         
         localStream.getTracks().forEach(track => {
             peerConnection.addTrack(track, localStream);
         });
 
         peerConnection.ontrack = (event) => {
-            mostrarVideoRemoto(event.streams[0], "David (Host)");
+            currentRemoteStream = event.streams[0];
+            
+            // EN LUGAR DE AÑADIRLO AL CARRUSEL, LO PONEMOS EN EL ÁREA SUPERIOR (GRANDE)
+            videoCompartido.srcObject = currentRemoteStream;
+            document.getElementById('labelVideoPrincipal').innerText = "David (Host)";
+
+            // Refrescar en caso de que ya estuviera compartiendo
+            get(child(dRef(realDB), `salas/${roomCode}/screenShare`)).then(snap => {
+                const data = snap.val();
+                if (data && data.active && data.by !== myRole) {
+                    videoCompartido.srcObject = currentRemoteStream;
+                    document.getElementById('labelVideoPrincipal').innerText = `Pantalla compartida de David`;
+                }
+            });
         };
 
         peerConnection.onicecandidate = (event) => {
@@ -2354,40 +2402,76 @@
         });
     });
 
+    // Detener de Compartir Pantalla Reusable
+    function detenerCompartirPantalla() {
+        if(screenStream) {
+            screenStream.getTracks().forEach(track => track.stop());
+            screenStream = null;
+        }
+        
+        btnCompartir.innerText = "🖥️ Compartir Pantalla / Diapositivas";
+        
+        // RESTAURAR CAMARA ORIGINAL AL OTRO USUARIO
+        if(peerConnection && localStream) {
+           const videoSender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+           if (videoSender) videoSender.replaceTrack(localStream.getVideoTracks()[0]);
+        }
+
+        // AVISAR A FIREBASE PARA REACOMODAR LA INTERFAZ
+        if(roomCode) {
+            set(child(dRef(realDB), `salas/${roomCode}/screenShare`), { active: false, by: myRole });
+        }
+        
+        // Al dejar de compartir, la lógica en `listenForScreenShare` se encargará de restaurar la cámara del otro lado
+        // para el cliente o admin remoto. Para nosotros (que dejamos de compartir), si el otro no está compartiendo,
+        // restauramos la vista de su cámara en grande.
+        
+        get(child(dRef(realDB), `salas/${roomCode}/screenShare`)).then(snap => {
+            const data = snap.val();
+            if(data && data.active && data.by !== myRole && currentRemoteStream) {
+                // El otro sigue compartiendo, no cambio lo que veo en grande
+                videoCompartido.srcObject = currentRemoteStream;
+                document.getElementById('labelVideoPrincipal').innerText = `Pantalla compartida de ${data.by}`;
+            } else if (currentRemoteStream) {
+                // Nadie comparte, vuelvo a ver la cámara del otro en grande
+                videoCompartido.srcObject = currentRemoteStream;
+                document.getElementById('labelVideoPrincipal').innerText = myRole === 'Admin' ? "Cliente Conectado" : "David (Host)";
+            }
+        });
+    }
+
     // COMPARTIR PANTALLA
     if(btnCompartir) {
         btnCompartir.addEventListener('click', async () => {
             if (!screenStream) {
                 try {
                     screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                    videoCompartido.srcObject = screenStream;
-                    areaSuperior.style.display = 'flex';
+                    // No cambiamos el srcObject de `videoCompartido` aquí, porque el usuario que comparte
+                    // sigue viendo a la otra persona en grande, mientras envía su pantalla a través de WebRTC.
+                    // Si quisieras que se viera su propia pantalla en miniatura, habría que agregar otro contenedor.
+                    
                     btnCompartir.innerText = "🛑 Detener Presentación";
                     
-                    // Aquí se podría reemplazar el track de video de la cámara por el de la pantalla en WebRTC:
-                    // if(peerConnection) {
-                    //    const videoSender = peerConnection.getSenders().find(s => s.track.kind === 'video');
-                    //    videoSender.replaceTrack(screenStream.getVideoTracks()[0]);
-                    // }
+                    // REEMPLAZAR EL TRACK DE CAMARA POR EL DE PANTALLA
+                    if(peerConnection) {
+                       const videoSender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                       if (videoSender) videoSender.replaceTrack(screenStream.getVideoTracks()[0]);
+                    }
 
+                    // AVISAR EN FIREBASE PARA MAXIMIZAR VISTA DEL CLIENTE
+                    if(roomCode) {
+                        set(child(dRef(realDB), `salas/${roomCode}/screenShare`), { active: true, by: myRole });
+                    }
+
+                    // Escuchar detención natural de la captura (ej: "Dejar de compartir" en Chrome)
                     screenStream.getVideoTracks()[0].onended = () => {
-                        areaSuperior.style.display = 'none';
-                        btnCompartir.innerText = "🖥️ Compartir Pantalla / Diapositivas";
-                        // Restaurar track original
-                        // if(peerConnection) {
-                        //    const videoSender = peerConnection.getSenders().find(s => s.track.kind === 'video');
-                        //    videoSender.replaceTrack(localStream.getVideoTracks()[0]);
-                        // }
-                        screenStream = null;
+                        detenerCompartirPantalla();
                     };
                 } catch (e) {
                     console.log("Se canceló la captura de pantalla.");
                 }
             } else {
-                screenStream.getTracks().forEach(track => track.stop());
-                screenStream = null;
-                areaSuperior.style.display = 'none';
-                btnCompartir.innerText = "🖥️ Compartir Pantalla / Diapositivas";
+                detenerCompartirPantalla();
             }
         });
     }
@@ -2457,8 +2541,4 @@
     // --- FIN DE LÓGICA DE SALA DE REUNIONES CON WEBRTC REAL ---
 </script>
 </body>
-</html>
-    
-  </body>
-  
 </html>
