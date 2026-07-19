@@ -423,7 +423,7 @@
             <button class="btn-gallery" id="btnCompartirPantalla" style="border: 1px solid var(--borde); width:100%; display: none;">🖥️ Compartir Pantalla / Diapositivas</button>
         </div>
 
-        <!-- Área de Video Principal (AHORA SE MUESTRA SIEMPRE PARA VER AL OTRO) -->
+        <!-- Área de Video Principal -->
         <div id="areaSuperiorVideo" style="width: 100%; height: 350px; background: #000; border-radius: 14px; margin-bottom: 15px; display: none; justify-content: center; align-items: center; overflow: hidden; position: relative;">
             <video id="videoCompartido" autoplay playsinline style="width: 100%; height: 100%; object-fit: contain;"></video>
             <div id="labelVideoPrincipal" style="position: absolute; top: 10px; left: 10px; background: rgba(10,37,64,0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">Cámara Principal</div>
@@ -437,8 +437,6 @@
                 <canvas id="canvasMiVideo" width="160" height="120" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
                 <div id="labelMiCamara" style="position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;">Tú</div>
             </div>
-            
-            <!-- EL VIDEO REMOTO AHORA SE AÑADE AQUÍ DINÁMICAMENTE SOLO COMO BACKUP O SI SON MAS PERSONAS, PERO EL PRINCIPAL ES AREA SUPERIOR -->
         </div>
 
         <!-- Controles Multimedia -->
@@ -466,6 +464,11 @@
 
         <div id="privateGallerySection" style="display:none;">
             <h3 style="color:var(--azul-marino);">💼 Proyecto Activo con David</h3>
+            
+            <!-- NUEVO BOTÓN DE NOTIFICACIÓN DE SALA -->
+            <button class="btn-main" id="btnJoinRoomFromChannel" style="width: 100%; margin-bottom: 15px; background: var(--verde-whatsapp); display: none; box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);">
+                🎥 ¡David ha abierto la sala de reuniones! Toca aquí para entrar
+            </button>
             
             <div class="tabs-nav">
                 <button class="tab-btn active" id="btnTabDescargar">📥 Mis Entregas</button>
@@ -762,31 +765,22 @@
         const btn = document.getElementById('btnDescargarSeleccionados');
         const originalText = btn.innerText;
         
-        // Cambiamos el texto del botón para que el usuario sepa que está cargando
         btn.innerText = "⏳ Comprimiendo archivos en ZIP...";
         btn.disabled = true;
 
         try {
             const zip = new JSZip();
-            // Creamos una carpeta dentro del ZIP con tu nombre
             const folder = zip.folder("Entregas_David_Hernandez");
 
             for (let chk of checkboxes) {
                 const url = chk.value;
                 const filename = chk.getAttribute('data-filename');
-                
-                // Descargamos el archivo internamente
                 const response = await fetch(url);
                 const blob = await response.blob();
-                
-                // Lo metemos en la carpeta del ZIP
                 folder.file(filename, blob);
             }
 
-            // Generamos el archivo ZIP final
             const content = await zip.generateAsync({ type: "blob" });
-            
-            // Disparamos una única descarga
             saveAs(content, "Archivos_Proyecto.zip");
             alert("¡Descarga completada con éxito!");
 
@@ -794,11 +788,10 @@
             console.error("Error al crear el ZIP:", e);
             alert("Hubo un error al comprimir los archivos. Es posible que los archivos sean demasiado pesados o haya un bloqueo de red (CORS).");
         } finally {
-            // Restauramos el botón
             btn.innerText = originalText;
             btn.disabled = false;
             document.querySelectorAll('.chk-client-download:checked').forEach(chk => chk.checked = false);
-            toggleClientDownloadBtn(); // Ocultamos el botón tras descargar
+            toggleClientDownloadBtn(); 
         }
     };
 
@@ -1594,7 +1587,15 @@ Revisa la tabla inferior para más detalles.`);
             galPrevia.innerHTML = '<p style="font-size:0.85rem;">Sincronizando vistas previas...</p>';
             
             const snapshot = await get(child(dRef(realDB), "proyectos"));
-            galFinal.innerHTML = ''; galPrevia.innerHTML = '';
+            
+            galFinal.innerHTML = ''; 
+            galPrevia.innerHTML = '';
+            
+            // Configurar CSS Grid para previas (Mosaico)
+            galPrevia.style.display = 'grid';
+            galPrevia.style.gridTemplateColumns = 'repeat(auto-fill, minmax(130px, 1fr))';
+            galPrevia.style.gap = '12px';
+
             let countFinal = 0; let countPrevia = 0;
             
             if(snapshot.exists()) {
@@ -1604,10 +1605,20 @@ Revisa la tabla inferior para más detalles.`);
                         const isPrevia = data[key].tipoArchivo === 'previa';
                         
                         if(isPrevia) { 
+                            const ext = data[key].archivo.split('.').pop().toLowerCase();
+                            let pContent = '';
+                            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+                                pContent = `<img src="${data[key].urlDownload}" style="width:100%; height:100px; object-fit:cover; border-radius:6px;">`;
+                            } else if (['mp4', 'webm', 'ogg'].includes(ext)) {
+                                pContent = `<video src="${data[key].urlDownload}" style="width:100%; height:100px; object-fit:cover; background:#000; border-radius:6px;"></video><div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:1.5rem; pointer-events:none;">▶️</div>`;
+                            } else {
+                                pContent = `<div style="width:100%; height:100px; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:2rem; border-radius:6px;">📄</div>`;
+                            }
+
                             galPrevia.innerHTML += `
-                                <div style="padding:10px; border-bottom:1px solid var(--borde); display:flex; justify-content:space-between; align-items:center;">
-                                    <div><strong>${data[key].archivo}</strong><br><small style="color:#64748b;">${data[key].fecha || ''}</small></div>
-                                    <a href="#" onclick="abrirVistaPrevia('${data[key].urlDownload}', '${data[key].archivo}')" style="color:var(--naranja); font-weight:bold; text-decoration:underline; font-size:0.85rem;">Ver Borrador 👁️</a>
+                                <div style="background:#fff; border:1px solid var(--naranja); border-radius:8px; padding:8px; cursor:pointer; position:relative; box-shadow:0 2px 4px rgba(255,102,0,0.1); transition:transform 0.2s;" onclick="abrirVistaPrevia('${data[key].urlDownload}', '${data[key].archivo}')" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                                    ${pContent}
+                                    <div style="font-size:0.7rem; font-weight:bold; color:var(--azul-marino); margin-top:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${data[key].archivo}">${data[key].archivo}</div>
                                 </div>`;
                             countPrevia++; 
                         } else { 
@@ -1626,14 +1637,31 @@ Revisa la tabla inferior para más detalles.`);
             }
             
             if(countFinal === 0) galFinal.innerHTML = '<p style="font-size:0.8rem; color:#64748b; margin:0;">No hay archivos pagados disponibles todavía.</p>';
-            if(countPrevia === 0) galPrevia.innerHTML = '<p style="font-size:0.8rem; color:#64748b; margin:0;">No hay borradores con marca de agua todavía.</p>';
+            if(countPrevia === 0) {
+                galPrevia.style.display = 'block';
+                galPrevia.innerHTML = '<p style="font-size:0.8rem; color:#64748b; margin:0;">No hay borradores con marca de agua todavía.</p>';
+            }
             
             document.getElementById('btnTabDescargar').innerText = `📥 Mis Entregas (${countFinal})`;
             document.getElementById('btnTabPrevia').innerText = `👁️ Vistas Previas (${countPrevia})`;
 
             document.getElementById('codeVerificationBlock').style.display = 'none';
-            document.getElementById('privateGallerySection').style.display = 'block'; document.getElementById('btnNotifClient').style.display = 'inline-block';
-            activeClientValidatedCode = code; decir("Canal privado sincronizado");
+            document.getElementById('privateGallerySection').style.display = 'block'; 
+            document.getElementById('btnNotifClient').style.display = 'inline-block';
+            
+            activeClientValidatedCode = code; 
+            if(typeof decir === "function") decir("Canal privado sincronizado");
+
+            // NUEVO: Escuchar en tiempo real si David abre la sala de reuniones
+            onValue(child(dRef(realDB), `salas/${code}/offer`), (snapshot) => {
+                const btnJoin = document.getElementById('btnJoinRoomFromChannel');
+                if (snapshot.exists()) {
+                    btnJoin.style.display = 'block';
+                    if(typeof decir === "function") decir("David te está esperando en la sala de reuniones.");
+                } else {
+                    btnJoin.style.display = 'none';
+                }
+            });
 
             if(localStorage.getItem('autoOpenPreviewTab') === 'true') {
                 document.getElementById('btnTabPrevia').click();
@@ -2591,6 +2619,24 @@ Revisa la tabla inferior para más detalles.`);
         ctxCanvas.drawImage(results.image, 0, 0, canvasMiVideo.width, canvasMiVideo.height);
         ctxCanvas.restore();
     }
+    
+    // NUEVO: Acción del botón para unirse directamente desde el canal privado
+    document.getElementById('btnJoinRoomFromChannel').addEventListener('click', () => {
+        // 1. Llenamos el input del cliente con su código validado
+        document.getElementById('clientInputRoomCode').value = activeClientValidatedCode;
+        
+        // 2. Cambiamos a la pantalla de la reunión
+        attemptChangeScreen('screenReunion');
+        
+        // 3. Preparamos la interfaz para el cliente
+        document.getElementById('reunionAccionesIniciales').style.display = 'none';
+        document.getElementById('clientRoomForm').style.display = 'block';
+        
+        // 4. Simulamos el clic de conectar con un ligero retraso para que cargue la cámara
+        setTimeout(() => {
+            document.getElementById('btnUnirseReunionReal').click();
+        }, 400);
+    });
     // --- FIN DE LÓGICA DE SALA DE REUNIONES CON WEBRTC REAL ---
 </script>
 </body>
